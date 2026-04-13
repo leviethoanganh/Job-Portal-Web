@@ -57,6 +57,15 @@ export const check = async (req: Request, res: Response) => {
         id: existAccountCompany._id,
         companyName: existAccountCompany.companyName,
         email: existAccountCompany.email,
+        city: existAccountCompany.city,
+        address: existAccountCompany.address,
+        companyModel: existAccountCompany.companyModel,
+        companyEmployees: existAccountCompany.companyEmployees,
+        workingTime: existAccountCompany.workingTime,
+        workOvertime: existAccountCompany.workOvertime,
+        phone: existAccountCompany.phone,
+        description: existAccountCompany.description,
+        logo: existAccountCompany.logo,
       };
 
       // Trả về kết quả thành công

@@ -2,6 +2,10 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import AccountCompany from "../models/account-company.model";
 import jwt from "jsonwebtoken";
+import { AccountRequest } from "../interfaces/request.interface";
+import Job from "../models/job.model";
+import City from "../models/city.model";
+import CV from "../models/cv.model";
 
 export const registerPost = async (req: Request, res: Response) => {
   try {
@@ -50,13 +54,13 @@ export const registerPost = async (req: Request, res: Response) => {
 
 export const loginPost = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-    
+
   // Kiểm tra email
   const existAccount = await AccountCompany.findOne({
     email: email
   });
 
-  if(!existAccount) {
+  if (!existAccount) {
     res.json({
       code: "error",
       message: "Email không tồn tại trong hệ thống!"
@@ -67,7 +71,7 @@ export const loginPost = async (req: Request, res: Response) => {
   // Kiểm tra mật khẩu
   const isPasswordValid = await bcrypt.compare(password, `${existAccount.password}`);
 
-  if(!isPasswordValid) {
+  if (!isPasswordValid) {
     res.json({
       code: "error",
       message: "Mật khẩu không đúng!"
@@ -103,3 +107,677 @@ export const loginPost = async (req: Request, res: Response) => {
     message: "Đăng nhập thành công!"
   })
 }
+
+export const profilePatch = async (req: AccountRequest, res: Response) => {
+  try {
+    if (req.file) {
+      req.body.logo = req.file.path;
+    } else {
+      delete req.body.logo;
+    }
+
+    await AccountCompany.updateOne(
+      {
+        _id: req.account.id
+      },
+      req.body
+    );
+
+    res.json({
+      code: "success",
+      message: "Cập nhật thành công!"
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      code: "error",
+      message: "Cập nhật không thành công!"
+    });
+  }
+};
+
+export const createJobPost = async (req: AccountRequest, res: Response) => {
+  try {
+    // 1. Gán ID công ty từ token (đã qua middleware xác thực)
+    req.body.companyId = req.account.id;
+
+    // 2. Ép kiểu dữ liệu lương sang số (Number)
+    req.body.salaryMin = req.body.salaryMin ? parseInt(req.body.salaryMin) : 0;
+    req.body.salaryMax = req.body.salaryMax ? parseInt(req.body.salaryMax) : 0;
+
+    // 3. Chuyển chuỗi công nghệ "React, Node" thành mảng ["React", "Node"]
+    if (req.body.technologies) {
+      req.body.technologies = req.body.technologies
+        .split(",")
+        .map((item: string) => item.trim()); // Xóa khoảng trắng thừa
+    } else {
+      req.body.technologies = [];
+    }
+
+    // 4. Xử lý danh sách ảnh từ Multer (upload.array)
+    req.body.images = [];
+    if (req.files && Array.isArray(req.files)) {
+      for (const file of req.files as any[]) {
+        // Đẩy URL từ Cloudinary (file.path) vào mảng images
+        req.body.images.push(file.path);
+      }
+    }
+
+    // 5. Lưu vào Database
+    const newRecord = new Job(req.body);
+    await newRecord.save();
+
+    res.json({
+      code: "success",
+      message: "Tạo công việc thành công!",
+    });
+  } catch (error) {
+    console.error("Lỗi tạo công việc:", error);
+    res.json({
+      code: "error",
+      message: "Dữ liệu không hợp lệ hoặc có lỗi hệ thống!",
+    });
+  }
+};
+
+export const listJob = async (req: AccountRequest, res: Response) => {
+  try {
+    // 1. Tạo đối tượng tìm kiếm (lọc theo ID công ty)
+    const find = {
+      companyId: req.account.id,
+    };
+
+    // --- PHẦN PHÂN TRANG ---
+    const limitItems = 6; // Số lượng công việc hiển thị trên mỗi trang
+    let page = 1;         // Mặc định là trang 1
+
+    // Nếu trên URL có truyền ?page=... thì lấy giá trị đó
+    if (req.query.page) {
+      page = parseInt(req.query.page.toString());
+    }
+
+    // Tính tổng số bản ghi thỏa mãn điều kiện 'find'
+    const totalRecord = await Job.countDocuments(find);
+
+    // Tính tổng số trang (Ví dụ: 5 bản ghi / 2 mỗi trang = 2.5 -> làm tròn lên là 3 trang)
+    const totalPage = Math.ceil(totalRecord / limitItems);
+
+    // Tính số lượng bản ghi cần bỏ qua (skip)
+    // Trang 1: skip = (1-1) * 2 = 0
+    // Trang 2: skip = (2-1) * 2 = 2
+    const skip = (page - 1) * limitItems;
+    // --- HẾT PHẦN PHÂN TRANG ---
+
+    // 2. Truy vấn dữ liệu từ Database
+    const jobs = await Job.find(find)
+      .sort({ createdAt: "desc" }) // Sắp xếp việc mới nhất lên đầu (desc = descending)
+      .limit(limitItems)           // Giới hạn số lượng lấy ra
+      .skip(skip);                 // Bỏ qua các bản ghi của các trang trước
+
+    // 3. Chuẩn hóa dữ liệu trả về cho Frontend
+    const dataFinal = jobs.map((item) => ({
+      id: item.id,
+      title: item.title,
+      salaryMin: item.salaryMin,
+      salaryMax: item.salaryMax,
+      position: item.position,
+      workingForm: item.workingForm,
+      technologies: item.technologies,
+    }));
+
+    // 4. Trả về kết quả kèm theo thông tin phân trang
+    res.json({
+      code: "success",
+      message: "Lấy danh sách công việc thành công!",
+      jobs: dataFinal,
+      totalPage: totalPage, // Frontend sẽ dùng cái này để vẽ số lượng option trong thẻ select
+    });
+  } catch (error) {
+    console.error(error);
+    res.json({
+      code: "error",
+      message: "Có lỗi xảy ra khi lấy dữ liệu!",
+    });
+  }
+};
+
+// [GET] Lấy dữ liệu chi tiết để sửa
+export const editJob = async (req: AccountRequest, res: Response) => {
+  try {
+    const id = req.params.id;
+    // Tìm Job theo ID và phải thuộc về Công ty đang đăng nhập (bảo mật)
+    const jobDetail = await Job.findOne({
+      _id: id,
+      companyId: req.account.id
+    });
+
+    if (jobDetail) {
+      res.json({
+        code: "success",
+        message: "Thành công!",
+        jobDetail: jobDetail
+      });
+    } else {
+      res.json({
+        code: "error",
+        message: "Công việc không tồn tại hoặc bạn không có quyền truy cập!"
+      });
+    }
+  } catch (error) {
+    res.json({
+      code: "error",
+      message: "ID không hợp lệ!"
+    });
+  }
+};
+
+// [PATCH] Cập nhật dữ liệu mới
+export const editJobPatch = async (req: AccountRequest, res: Response) => {
+  try {
+    const id = req.params.id;
+
+    // 1. Kiểm tra quyền sở hữu trước khi cho phép sửa
+    const jobDetail = await Job.findOne({
+      _id: id,
+      companyId: req.account.id
+    });
+
+    if (!jobDetail) {
+      return res.json({
+        code: "error",
+        message: "Id không hợp lệ!"
+      });
+    }
+
+    // 2. Chuẩn hóa dữ liệu (Sửa lỗi bodysuit -> body)
+    req.body.salaryMin = req.body.salaryMin ? parseInt(req.body.salaryMin) : 0;
+    req.body.salaryMax = req.body.salaryMax ? parseInt(req.body.salaryMax) : 0;
+
+    // Chuyển chuỗi công nghệ thành mảng
+    if (req.body.technologies) {
+      req.body.technologies = req.body.technologies.split(",").map((t: string) => t.trim());
+    }
+
+    // 3. Xử lý logic ẢNH (Quan trọng)
+    // - Nếu req.body.images gửi lên là string (1 ảnh cũ) hoặc array (nhiều ảnh cũ)
+    let imagesFinal = [];
+    if (req.body.images) {
+      if (Array.isArray(req.body.images)) {
+        imagesFinal = [...req.body.images];
+      } else {
+        imagesFinal.push(req.body.images);
+      }
+    }
+
+    // - Thêm ảnh mới vừa upload từ Multer (nếu có)
+    if (req.files && Array.isArray(req.files)) {
+      for (const file of req.files as any[]) {
+        imagesFinal.push(file.path); // path là URL từ Cloudinary
+      }
+    }
+
+    req.body.images = imagesFinal;
+
+    // 4. Cập nhật vào Database
+    await Job.updateOne(
+      {
+        _id: id,
+        companyId: req.account.id
+      },
+      req.body
+    );
+
+    res.json({
+      code: "success",
+      message: "Cập nhật thành công!"
+    });
+  } catch (error) {
+    console.error(error);
+    res.json({
+      code: "error",
+      message: "Đã có lỗi xảy ra khi cập nhật!"
+    });
+  }
+};
+
+export const deleteJobDel = async (req: AccountRequest, res: Response) => {
+  try {
+    const id = req.params.id;
+
+    // Thực hiện xóa trực tiếp với điều kiện kép (ID + Chủ sở hữu)
+    const result = await Job.deleteOne({
+      _id: id,
+      companyId: req.account.id
+    });
+
+    // result.deletedCount sẽ bằng 1 nếu xóa thành công, bằng 0 nếu không tìm thấy
+    if (result.deletedCount > 0) {
+      return res.json({
+        code: "success",
+        message: "Đã xóa công việc thành công!"
+      });
+    } else {
+      return res.json({
+        code: "error",
+        message: "Không tìm thấy công việc hoặc bạn không có quyền xóa!"
+      });
+    }
+  } catch (error) {
+    return res.json({
+      code: "error",
+      message: "ID không hợp lệ hoặc lỗi hệ thống!"
+    });
+  }
+};
+
+
+export const list = async (req: AccountRequest, res: Response) => {
+  try {
+    // 1. Xử lý giới hạn số lượng bản ghi (Pagination cơ bản)
+    const find: any = {};
+
+    let limitItems = 6;
+    if (req.query.limitItems) {
+      limitItems = parseInt(`${req.query.limitItems}`);
+    }
+
+    let page = 1;
+    if (req.query.page) {
+      // Parsing to int and ensuring it's at least 1
+      page = Math.max(1, parseInt(`${req.query.page}`));
+    }
+
+    const totalRecord = await AccountCompany.countDocuments(find);
+    const totalPage = Math.ceil(totalRecord / limitItems);
+    const skip = (page - 1) * limitItems;
+
+    // 2. Lấy danh sách tài khoản công ty từ Database
+    const companyList = await AccountCompany
+      .find(find) // Use the 'find' object defined earlier in your logic
+      .sort({
+        createdAt: "desc" // Sort by newest first
+      })
+      .limit(limitItems) // Limit to the number of items per page (e.g., 2)
+      .skip(skip);       // Skip the items from previous pages
+
+    const companyListFinal = [];
+
+    // 3. Duyệt qua từng công ty để lấy thêm thông tin liên quan
+    for (const item of companyList) {
+      const dataItemFinal = {
+        id: item.id,
+        logo: item.logo,
+        companyName: item.companyName,
+        cityName: "",
+        totalJob: 0
+      };
+
+      // Lấy tên Thành phố từ Model City dựa trên ID lưu trong công ty
+      const city = await City.findOne({
+        _id: item.city
+      });
+      dataItemFinal.cityName = city ? city.name : "N/A";
+
+      // Đếm tổng số lượng Job mà công ty này đã đăng
+      const totalJob = await Job.countDocuments({
+        companyId: item.id
+      });
+      dataItemFinal.totalJob = totalJob;
+
+      // Thêm dữ liệu đã làm sạch vào mảng kết quả
+      companyListFinal.push(dataItemFinal);
+    }
+
+    // 4. Trả về phản hồi cho Frontend
+    res.json({
+      code: "success",
+      message: "Lấy danh sách công ty thành công!",
+      companyList: companyListFinal,
+      totalPage: totalPage
+    });
+  } catch (error) {
+    console.error("Lỗi lấy danh sách công ty:", error);
+    res.json({
+      code: "error",
+      message: "Có lỗi xảy ra phía máy chủ!"
+    });
+  }
+};
+
+
+export const detail = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+
+    // 1. Find the Company
+    const record = await AccountCompany.findOne({ _id: id });
+
+    if (record) {
+      const companyDetail = {
+        id: record.id,
+        logo: record.logo,
+        companyName: record.companyName,
+        address: record.address,
+        companyModel: record.companyModel,
+        companyEmployees: record.companyEmployees,
+        workingTime: record.workingTime,
+        workOvertime: record.workOvertime,
+        description: record.description
+      };
+
+      // 2. Find Jobs related to this Company
+      const jobs = await Job.find({ companyId: id })
+        .sort({ createdAt: "desc" }); // Fixed .spell to .sort
+
+      // 3. Get City Name (Optimized: Get it once before the loop)
+      const cityRecord = await City.findOne({ _id: record.city });
+      const cityName = cityRecord?.name || "";
+
+      // 4. Format the Jobs list for the frontend
+      const dataFinal = jobs.map((item: any) => ({
+        id: item.id,
+        companyLogo: record.logo,
+        title: item.title,
+        companyName: record.companyName,
+        salaryMin: item.salaryMin,
+        salaryMax: item.salaryMax,
+        position: item.position,
+        workingForm: item.workingForm,
+        companyCity: cityName,
+        technologies: item.technologies
+      }));
+
+      res.json({
+        code: "success",
+        message: "Thành công!",
+        companyDetail: companyDetail,
+        jobs: dataFinal
+      });
+    } else {
+      res.json({
+        code: "error",
+        message: "Không tìm thấy công ty!"
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.json({
+      code: "error",
+      message: "Lỗi hệ thống!"
+    });
+  }
+};
+
+export const listCV = async (req: AccountRequest, res: Response) => {
+  try {
+    const companyId = req.account.id;
+
+    // 1. Get all Job IDs and their details for this company
+    const listJob = await Job.find({
+      companyId: companyId
+    });
+
+    if (!listJob || listJob.length === 0) {
+      return res.json({
+        code: "success",
+        message: "Công ty chưa có bài đăng tuyển dụng nào.",
+        listCV: []
+      });
+    }
+
+    const listJobId = listJob.map(item => item.id);
+
+    // 2. Get all CVs that match those Job IDs
+    const listCVRaw = await CV.find({
+      jobId: { $in: listJobId }
+    }).sort({ createdAt: "desc" }); // Fixed .spell to .sort
+
+    // 3. Map the data efficiently
+    // We use the already fetched 'listJob' to find info without hitting the DB again
+    const dataFinal = listCVRaw.map(cv => {
+      const infoJob = listJob.find(job => job.id === cv.jobId);
+
+      return {
+        id: cv.id,
+        fullName: cv.fullName,
+        email: cv.email,
+        phone: cv.phone,
+        fileCV: cv.fileCV, // <-- Add this line to return the CV file link
+        viewed: cv.viewed,
+        status: cv.status,
+        jobTitle: infoJob?.title || "",
+        jobSalaryMin: infoJob?.salaryMin ? parseInt(infoJob.salaryMin.toString()) : 0,
+        jobSalaryMax: infoJob?.salaryMax ? parseInt(infoJob.salaryMax.toString()) : 0,
+        jobPosition: infoJob?.position || "",
+        jobWorkingForm: infoJob?.workingForm || ""
+      };
+    });
+
+    res.json({
+      code: "success",
+      message: "Lấy danh sách CV thành công!",
+      listCV: dataFinal
+    });
+
+  } catch (error) {
+    console.error("Error fetching CV list:", error);
+    res.json({
+      code: "error",
+      message: "Lỗi hệ thống khi lấy danh sách CV."
+    });
+  }
+};
+
+export const detailCV = async (req: AccountRequest, res: Response) => {
+  try {
+    const companyId = req.account.id;
+    const cvId = req.params.id;
+
+    // 1. Tìm thông tin CV theo ID
+    const infoCV = await CV.findOne({
+      _id: cvId
+    });
+
+    if (!infoCV) {
+      return res.json({
+        code: "error",
+        message: "Không tìm thấy hồ sơ ứng tuyển!"
+      });
+    }
+
+    // 2. Tìm thông tin công việc và xác thực quyền sở hữu của công ty
+    // Điều này cực kỳ quan trọng để bảo mật dữ liệu
+    const infoJob = await Job.findOne({
+      _id: infoCV.jobId,
+      companyId: companyId
+    });
+
+    if (!infoJob) {
+      return res.json({
+        code: "error",
+        message: "Bạn không có quyền truy cập hồ sơ này!"
+      });
+    }
+
+    // 3. Chuẩn bị dữ liệu gửi về Frontend
+    const dataFinalCV = {
+      id: infoCV.id,
+      fullName: infoCV.fullName,
+      email: infoCV.email,
+      phone: infoCV.phone,
+      fileCV: infoCV.fileCV,
+      status: infoCV.status
+    };
+
+    const dataFinalJob = {
+      id: infoJob.id,
+      title: infoJob.title,
+      salaryMin: infoJob.salaryMin,
+      salaryMax: infoJob.salaryMax,
+      position: infoJob.position,
+      workingForm: infoJob.workingForm,
+      technologies: infoJob.technologies,
+    };
+
+    // 4. Cập nhật trạng thái "Đã xem" nếu đây là lần đầu mở CV
+    if (!infoCV.viewed) {
+      await CV.updateOne(
+        { _id: cvId },
+        { $set: { viewed: true } }
+      );
+    }
+
+    res.json({
+      code: "success",
+      message: "Lấy chi tiết CV thành công!",
+      infoCV: dataFinalCV,
+      infoJob: dataFinalJob
+    });
+
+  } catch (error) {
+    console.error("Error in detailCV:", error);
+    res.json({
+      code: "error",
+      message: "Lỗi hệ thống, vui lòng thử lại sau!"
+    });
+  }
+};
+
+
+export const changeStatusCVPatch = async (req: AccountRequest, res: Response) => {
+  try {
+    const companyId = req.account.id;
+    // Fixed: changed 'bodysuit' to 'body'
+    const cvId = req.body.id;
+    const status = req.body.status;
+
+    // 1. Find the CV
+    const infoCV = await CV.findOne({
+      _id: cvId
+    });
+
+    if (!infoCV) {
+      return res.json({
+        code: "error",
+        message: "Không tìm thấy hồ sơ ứng tuyển!"
+      });
+    }
+
+    // 2. Security Check: Ensure this CV belongs to a job posted by THIS company
+    const infoJob = await Job.findOne({
+      _id: infoCV.jobId,
+      companyId: companyId
+    });
+
+    if (!infoJob) {
+      return res.json({
+        code: "error",
+        message: "Bạn không có quyền thay đổi trạng thái hồ sơ này!"
+      });
+    }
+
+    // 3. Update the status
+    await CV.updateOne(
+      { _id: cvId },
+      {
+        $set: { status: status }
+      }
+    );
+
+    res.json({
+      code: "success",
+      message: "Cập nhật trạng thái thành công!"
+    });
+
+  } catch (error) {
+    console.error("Update Status Error:", error);
+    res.json({
+      code: "error",
+      message: "Lỗi hệ thống, vui lòng thử lại sau!"
+    });
+  }
+};
+export const deleteCVDel = async (req: AccountRequest, res: Response) => {
+  try {
+    const companyId = req.account.id;
+    const cvId = req.params.id;
+
+    // 1. Tìm CV để lấy jobId
+    const infoCV = await CV.findOne({
+      _id: cvId
+    });
+
+    if (!infoCV) {
+      return res.json({
+        code: "error",
+        message: "Không tìm thấy CV!"
+      });
+    }
+
+    // 2. Kiểm tra xem Job của CV này có thuộc về công ty đang đăng nhập không
+    const infoJob = await Job.findOne({
+      _id: infoCV.jobId,
+      companyId: companyId
+    });
+
+    if (!infoJob) {
+      return res.json({
+        code: "error",
+        message: "Bạn không có quyền xóa CV này!"
+      });
+    }
+
+    // 3. Thực hiện xóa vĩnh viễn khỏi Database
+    await CV.deleteOne({
+      _id: cvId
+    });
+
+    res.json({
+      code: "success",
+      message: "Đã xóa CV thành công!"
+    });
+
+  } catch (error) {
+    console.error("Delete CV Error:", error);
+    res.json({
+      code: "error",
+      message: "Lỗi hệ thống, không thể xóa CV!"
+    });
+  }
+};
+
+export const top = async (req: Request, res: Response) => {
+  try {
+    // 1. Group jobs by companyId, count them, sort by count descending, limit to 3
+    const topCompanyIds = await Job.aggregate([
+      { $group: { _id: "$companyId", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 3 }
+    ]);
+
+    const result = [];
+    // 2. Fetch company details for each of the top company IDs
+    for (const item of topCompanyIds) {
+      const company = await AccountCompany.findOne({ _id: item._id });
+      if (company) {
+        result.push({
+          id: company.id,
+          companyName: company.companyName,
+          totalJob: item.count
+        });
+      }
+    }
+
+    res.json({
+      code: "success",
+      message: "Lấy danh sách top công ty thành công!",
+      companyList: result
+    });
+  } catch (error) {
+    console.error("Lỗi lấy top công ty:", error);
+    res.json({
+      code: "error",
+      message: "Có lỗi xảy ra phía máy chủ!"
+    });
+  }
+};

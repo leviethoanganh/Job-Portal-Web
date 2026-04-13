@@ -18,7 +18,8 @@ export const storage = new CloudinaryStorage({
   params: async (req, file) => {
     return {
       folder: "it_jobs_uploads", // Tên thư mục trên Cloudinary
-      allowed_formats: ["jpg", "png", "jpeg"], // Các định dạng file cho phép
+      allowed_formats: ["jpg", "png", "jpeg", "pdf"], // Các định dạng file cho phép
+      resource_type: "auto",
     };
   },
 });
