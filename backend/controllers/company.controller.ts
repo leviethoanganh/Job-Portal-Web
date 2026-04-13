@@ -96,10 +96,11 @@ export const loginPost = async (req: Request, res: Response) => {
 
   // Lưu token vào cookie
   res.cookie("token", token, {
-    maxAge: (24 * 60 * 60 * 1000), // 1 ngày
-    httpOnly: true, // Chỉ cho phép cookie được truy cập bởi server
-    sameSite: "lax", // Cho phép lấy được cookie từ tên miền khác
-    secure: false, // process.env.NODE_ENV === "production", // http: false, https: true
+    path: "/",
+    maxAge: (24 * 60 * 60 * 1000), 
+    httpOnly: true, 
+    sameSite: "none", 
+    secure: true, 
   });
 
   return res.json({

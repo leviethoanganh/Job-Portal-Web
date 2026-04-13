@@ -94,11 +94,11 @@ export const loginPost = async (req: Request, res: Response) => {
 
     // 5. Lưu token vào HttpOnly Cookie để tăng cường bảo mật
     res.cookie("token", token, {
-      path: "/", // Thêm dòng này
-      maxAge: 24 * 60 * 60 * 1000, // 1 ngày
-      httpOnly: true, // Ngăn chặn JavaScript ở trình duyệt truy cập vào token
-      sameSite: "lax", // cho phép trao đổi giữa các tên miền khác nhau 
-      secure: process.env.NODE_ENV === "production", // Chỉ gửi qua HTTPS khi ở môi trường thật
+      path: "/", 
+      maxAge: 24 * 60 * 60 * 1000, 
+      httpOnly: true, 
+      sameSite: "none", 
+      secure: true, 
     });
 
     // 6. Trả về phản hồi thành công
