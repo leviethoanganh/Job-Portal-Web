@@ -13,11 +13,11 @@ dotenv.config();
 connectDB();
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 // 1. Cấu hình CORS để cho phép Frontend (3000) gọi API
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: process.env.CLIENT_URL || "http://localhost:3000",
   methods: ["GET", "POST", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
   credentials: true, // Cho phép gửi cookie nếu cần
