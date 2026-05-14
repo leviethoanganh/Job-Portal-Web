@@ -1,11 +1,8 @@
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
-import  {  useRouter  }  from  "next/navigation";
 
 export const HeaderAccount = () => {
   const { isLogin, infoUser, infoCompany } = useAuth();
-
-  const  router  =  useRouter ();
 
   const handleLogout = (url: string) => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
@@ -14,11 +11,11 @@ export const HeaderAccount = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.code === "success") {
-          router.push(url);
+          window.location.href = url;
         }
       })
-      .catch((error) => {
-        console.error("Logout error:", error);
+      .catch(() => {
+        window.location.href = url;
       });
   };
 

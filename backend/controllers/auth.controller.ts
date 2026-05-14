@@ -71,7 +71,7 @@ export const check = async (req: Request, res: Response) => {
       });
     }
 
-    res.clearCookie("token");
+    res.clearCookie("token", COOKIE_OPTIONS);
     return res.json({
       code: "error",
       message: "Invalid token or account not found!"
@@ -86,8 +86,15 @@ export const check = async (req: Request, res: Response) => {
   }
 };
 
+const COOKIE_OPTIONS = {
+  path: "/",
+  httpOnly: true,
+  sameSite: "none" as const,
+  secure: true,
+};
+
 export const logout = async (req: Request, res: Response) => {
-  res.clearCookie("token");
+  res.clearCookie("token", COOKIE_OPTIONS);
 
   res.json({
     code: "success",

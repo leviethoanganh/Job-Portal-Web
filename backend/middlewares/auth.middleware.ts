@@ -5,6 +5,13 @@ import { AccountRequest } from "../interfaces/request.interface";
 import mongoose from "mongoose";
 import  AccountCompany  from  "../models/account-company.model" ;
 
+const COOKIE_OPTIONS = {
+  path: "/",
+  httpOnly: true,
+  sameSite: "none" as const,
+  secure: true,
+};
+
 export const verifyTokenUser = async (req: AccountRequest, res: Response, next: NextFunction) => {
   try {
     const token = req.cookies.token;
@@ -21,7 +28,7 @@ export const verifyTokenUser = async (req: AccountRequest, res: Response, next: 
 
     if (!existAccount) {
       console.log(`--- [Middleware] Clearing cookie: ID ${decoded.id} not found in DB ---`);
-      res.clearCookie("token");
+      res.clearCookie("token", COOKIE_OPTIONS);
       return res.json({ code: "error", message: "Account not found!" });
     }
 
@@ -30,7 +37,7 @@ export const verifyTokenUser = async (req: AccountRequest, res: Response, next: 
     next();
   } catch (error: any) {
     console.log("--- [Middleware] Clearing cookie: Token error ---", error.message);
-    res.clearCookie("token");
+    res.clearCookie("token", COOKIE_OPTIONS);
     return res.json({ code: "error", message: "Invalid token!" });
   }
 };
@@ -56,7 +63,7 @@ export const verifyTokenCompany = async (req: AccountRequest, res: Response, nex
     });
 
     if (!existAccount) {
-      res.clearCookie("token");
+      res.clearCookie("token", COOKIE_OPTIONS);
       res.json({
         code: "error",
         message: "Invalid token!"
@@ -67,7 +74,7 @@ export const verifyTokenCompany = async (req: AccountRequest, res: Response, nex
     req.account = existAccount;
     next();
   } catch (error) {
-    res.clearCookie("token");
+    res.clearCookie("token", COOKIE_OPTIONS);
     res.json({
       code: "error",
       message: error
