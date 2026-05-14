@@ -48,41 +48,39 @@ export const detail = async (req: Request, res: Response) => {
 
       res.json({
         code: "success",
-        Message: "Thành công!",
+        Message: "Success!",
         jobDetail: jobDetail
       });
     } else {
       res.json({
         code: "error",
-        Message: "Thất bại!"
+        Message: "Failed!"
       });
     }
   } catch (error) {
     res.json({
       code: "error",
-      Message: "Thất bại!"
+      Message: "Failed!"
     });
   }
 };
 
 export const applyPost = async (req: Request, res: Response) => {
   try {
-    // Gán đường dẫn file từ multer (cloudinary) vào body trước khi lưu
     req.body.fileCV = req.file ? req.file.path : "";
 
-    // Khởi tạo bản ghi mới từ dữ liệu gửi lên
     const newRecord = new CV(req.body);
     await newRecord.save();
 
     res.json({
       code: "success",
-      message: "Đã gửi CV thành công!"
+      message: "CV submitted successfully!"
     });
   } catch (error) {
     console.log(error);
     res.json({
       code: "error",
-      message: "Gửi CV không thành công. Vui lòng gửi lại!"
+      message: "Failed to submit CV. Please try again!"
     });
   }
 };

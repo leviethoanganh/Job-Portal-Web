@@ -29,7 +29,6 @@ export default async function Page({
     infoCV = data.infoCV;
     infoJob = data.infoJob;
 
-    // Chuyển đổi value sang label để hiển thị
     if (infoJob) {
       infoJob.positionLabel = positionList.find(pos => pos.value === infoJob.position)?.label;
       infoJob.workingFormLabel = workingFormList.find(work => work.value === infoJob.workingForm)?.label;
@@ -37,35 +36,35 @@ export default async function Page({
   }
 
   if (!infoCV) {
-    return <div className="p-10 text-center text-red-500 font-bold">Không tìm thấy thông tin hồ sơ.</div>;
+    return <div className="p-10 text-center text-red-500 font-bold">Application not found.</div>;
   }
 
   return (
     <>
       <div className="py-[60px]">
         <div className="contain">
-          {/* 1. Thông tin CV */}
+          {/* 1. CV Information */}
           <div className="border border-[#DEDEDE] rounded-[8px] p-[20px]">
             <div className="flex flex-wrap gap-[20px] items-center justify-between mb-[20px]">
               <h2 className="sm:w-auto w-[100%] font-[700] text-[20px] text-black">
-                Thông tin CV
+                CV Information
               </h2>
               <Link href="/company-manage/cv/list" className="font-[400] text-[14px] text-[#0088FF] underline">
-                Quay lại danh sách
+                Back to list
               </Link>
             </div>
 
             <div className="font-[400] text-[16px] text-black mb-[10px]">
-              Họ tên: <span className="font-[700] ml-[5px]">{infoCV.fullName}</span>
+              Full Name: <span className="font-[700] ml-[5px]">{infoCV.fullName}</span>
             </div>
             <div className="font-[400] text-[16px] text-black mb-[10px]">
-              E-mail: <span className="font-[700] ml-[5px]">{infoCV.email}</span>
+              Email: <span className="font-[700] ml-[5px]">{infoCV.email}</span>
             </div>
             <div className="font-[400] text-[16px] text-black mb-[10px]">
-              Số điện thoại: <span className="font-[700] ml-[5px]">{infoCV.phone}</span>
+              Phone: <span className="font-[700] ml-[5px]">{infoCV.phone}</span>
             </div>
             <div className="font-[400] text-[16px] text-black mb-[10px]">
-              File CV:
+              CV File:
             </div>
 
             <div className="bg-[#D9D9D9] h-[736px] rounded-[8px] overflow-hidden">
@@ -86,40 +85,40 @@ export default async function Page({
                 )
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-500">
-                  Không có file CV để hiển thị.
+                  No CV file available.
                 </div>
               )}
             </div>
           </div>
 
-          {/* 2. Thông tin công việc */}
+          {/* 2. Job Information */}
           {infoJob && (
             <div className="border border-[#DEDEDE] rounded-[8px] p-[20px] mt-[20px]">
               <h2 className="sm:w-auto w-[100%] font-[700] text-[20px] text-black mb-[20px]">
-                Thông tin công việc
+                Job Information
               </h2>
 
               <div className="font-[400] text-[16px] text-black mb-[10px]">
-                Tên công việc: <span className="font-[700] ml-[5px]">{infoJob.title}</span>
+                Job Title: <span className="font-[700] ml-[5px]">{infoJob.title}</span>
               </div>
 
               <div className="font-[400] text-[16px] text-black mb-[10px]">
-                Mức lương:
+                Salary:
                 <span className="font-[700] ml-[5px]">
                   {infoJob.salaryMin?.toLocaleString("vi-VN")} $ - {infoJob.salaryMax?.toLocaleString("vi-VN")} $
                 </span>
               </div>
 
               <div className="font-[400] text-[16px] text-black mb-[10px]">
-                Cấp bậc: <span className="font-[700] ml-[5px]">{infoJob.positionLabel}</span>
+                Position: <span className="font-[700] ml-[5px]">{infoJob.positionLabel}</span>
               </div>
 
               <div className="font-[400] text-[16px] text-black mb-[10px]">
-                Hình thức làm việc: <span className="font-[700] ml-[5px]">{infoJob.workingFormLabel}</span>
+                Working Form: <span className="font-[700] ml-[5px]">{infoJob.workingFormLabel}</span>
               </div>
 
               <div className="font-[400] text-[16px] text-black mb-[10px]">
-                Công nghệ:
+                Technologies:
                 <span className="font-[700] ml-[5px]">
                   {infoJob.technologies?.join(", ")}
                 </span>
@@ -130,7 +129,7 @@ export default async function Page({
                 className="font-[400] text-[14px] text-[#0088FF] underline mt-[10px] inline-block"
                 target="_blank"
               >
-                Xem chi tiết công việc
+                View job details
               </Link>
             </div>
           )}

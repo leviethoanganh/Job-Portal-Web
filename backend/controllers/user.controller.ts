@@ -10,11 +10,9 @@ import AccountCompany from "../models/account-company.model";
 
 export const registerPost = async (req: AccountRequest, res: Response) => {
   try {
-    // 1. Lấy dữ liệu từ body của yêu cầu
     const { fullName, email, password } = req.body;
-    console.log("Dữ liệu nhận được từ Frontend:", { fullName, email, password });
+    console.log("Received data from frontend:", { fullName, email, password });
 
-    // 2. Kiểm tra xem Email đã tồn tại trong Database chưa
     const existAccount = await AccountUser.findOne({
       email: email,
     });
@@ -22,15 +20,13 @@ export const registerPost = async (req: AccountRequest, res: Response) => {
     if (existAccount) {
       return res.json({
         code: "error",
-        message: "Email đã tồn tại trong hệ thống!",
+        message: "Email already exists!",
       });
     }
 
-    // 3. Mã hóa mật khẩu trước khi lưu để bảo mật
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    // 4. Tạo bản ghi mới sử dụng Model AccountUser
     const newAccount = new AccountUser({
       fullName: fullName,
       email: email,
@@ -39,111 +35,98 @@ export const registerPost = async (req: AccountRequest, res: Response) => {
       phone: "",
     });
 
-    // 5. Lưu vào MongoDB
     await newAccount.save();
 
-    // 6. Phản hồi về Frontend
     res.json({
       code: "success",
-      message: "Đăng ký tài khoản thành công!",
+      message: "Account registered successfully!",
     });
   } catch (error) {
     res.json({
       code: "error",
-      message: "Đã có lỗi xảy ra, vui lòng thử lại sau!",
+      message: "An error occurred, please try again later!",
     });
   }
 };
 
 export const loginPost = async (req: Request, res: Response) => {
   try {
-    // 1. Nhận dữ liệu từ body
     const { email, password } = req.body;
 
-    // 2. Kiểm tra sự tồn tại của tài khoản
     const existAccount = await AccountUser.findOne({ email: email });
 
     if (!existAccount) {
       return res.json({
         code: "error",
-        message: "Email không tồn tại trong hệ thống!",
+        message: "Email not found!",
       });
     }
 
-    // 3. So sánh mật khẩu người dùng nhập với mật khẩu đã mã hóa trong DB
     const isPasswordValid = await bcrypt.compare(password, existAccount.password);
 
     if (!isPasswordValid) {
       return res.json({
         code: "error",
-        message: "Mật khẩu không đúng!",
+        message: "Incorrect password!",
       });
     }
 
-    // 4. Tạo JWT token để định danh người dùng
     const token = jwt.sign(
       {
         id: existAccount._id,
         email: existAccount.email,
       },
-      `${process.env.JWT_SECRET}`, // Sử dụng biến môi trường JWT_SECRET
+      `${process.env.JWT_SECRET}`,
       {
-        expiresIn: "1d", // Token có hiệu lực trong 1 ngày
+        expiresIn: "1d",
       }
     );
 
-    // 5. Lưu token vào HttpOnly Cookie để tăng cường bảo mật
     res.cookie("token", token, {
-      path: "/", 
-      maxAge: 24 * 60 * 60 * 1000, 
-      httpOnly: true, 
-      sameSite: "none", 
-      secure: true, 
+      path: "/",
+      maxAge: 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
     });
 
-    // 6. Trả về phản hồi thành công
     res.json({
       code: "success",
-      message: "Đăng nhập thành công!",
+      message: "Login successful!",
     });
   } catch (error) {
     res.json({
       code: "error",
-      message: "Đã có lỗi xảy ra, vui lòng thử lại sau!",
+      message: "An error occurred, please try again later!",
     });
   }
 };
 
 export const profilePatch = async (req: AccountRequest, res: Response) => {
   try {
-    // 1. Xử lý file ảnh (nếu người dùng có upload ảnh mới qua Cloudinary)
     if (req.file) {
-      // req.file.path chứa URL ảnh sau khi upload lên Cloudinary thành công
       req.body.avatar = req.file.path;
     } else {
-      // Nếu không gửi file, xóa thuộc tính avatar khỏi body để tránh ghi đè dữ liệu cũ bằng null
       delete req.body.avatar;
     }
 
-    // 2. Cập nhật vào Database dựa trên ID người dùng lấy từ Middleware (req.account)
     await AccountUser.updateOne(
       {
-        _id: req.account._id // Dùng _id cho chuẩn xác
+        _id: req.account._id
       },
-      req.body // Cập nhật các trường gửi lên từ form (fullName, phone, email, avatar...)
+      req.body
     );
 
-    // 3. Phản hồi thành công
     return res.json({
       code: "success",
-      message: "Cập nhật thành công!"
+      message: "Updated successfully!"
     });
 
   } catch (error) {
-    console.error("Lỗi Profile Patch:", error);
+    console.error("Profile Patch Error:", error);
     return res.json({
       code: "error",
-      message: "Cập nhật không thành công!"
+      message: "Update failed!"
     });
   }
 }
@@ -154,7 +137,7 @@ export const listCV = async (req: AccountRequest, res: Response) => {
 
     const listCV = await CV.find({
       email: userEmail
-    }).sort({ // Fixed .spell to .sort
+    }).sort({
       createdAt: "desc"
     });
 
@@ -180,7 +163,7 @@ export const listCV = async (req: AccountRequest, res: Response) => {
         dataItemFinal.jobTitle = `${infoJob.title}`;
         dataItemFinal.jobSalaryMin = parseInt(`${infoJob.salaryMin}`);
         dataItemFinal.jobSalaryMax = parseInt(`${infoJob.salaryMax}`);
-        dataItemFinal.jobPosition = `${infoJob.position}`; // Fixed template literal space error
+        dataItemFinal.jobPosition = `${infoJob.position}`;
         dataItemFinal.jobWorkingForm = `${infoJob.workingForm}`;
 
         const infoCompany = await AccountCompany.findOne({
@@ -196,14 +179,14 @@ export const listCV = async (req: AccountRequest, res: Response) => {
 
     res.json({
       code: "success",
-      message: "Lấy danh sách CV thành công!",
+      message: "CV list retrieved successfully!",
       listCV: dataFinal
     });
 
   } catch (error) {
     res.json({
       code: "error",
-      message: "Thất bại!"
+      message: "Failed!"
     });
   }
 };
@@ -213,7 +196,6 @@ export const detailCV = async (req: AccountRequest, res: Response) => {
     const userEmail = req.account.email;
     const cvId = req.params.id;
 
-    // 1. Phải bắt buộc có email của chính user đang đăng nhập để bảo mật
     const infoCV = await CV.findOne({
       _id: cvId,
       email: userEmail
@@ -222,7 +204,7 @@ export const detailCV = async (req: AccountRequest, res: Response) => {
     if (!infoCV) {
       return res.json({
         code: "error",
-        message: "Không tìm thấy hồ sơ ứng tuyển hoặc bạn không có quyền truy cập!"
+        message: "Application not found or access denied!"
       });
     }
 
@@ -235,7 +217,7 @@ export const detailCV = async (req: AccountRequest, res: Response) => {
       fullName: infoCV.fullName,
       email: infoCV.email,
       phone: infoCV.phone,
-      fileCV: infoCV.fileCV, // Cloudinary file
+      fileCV: infoCV.fileCV,
       status: infoCV.status
     };
 
@@ -250,8 +232,7 @@ export const detailCV = async (req: AccountRequest, res: Response) => {
         workingForm: infoJob.workingForm,
         technologies: infoJob.technologies,
       };
-      
-      // Get company Name
+
       const infoCompany = await AccountCompany.findOne({ _id: infoJob.companyId });
       if (infoCompany) {
         dataFinalJob.companyName = infoCompany.companyName;
@@ -260,7 +241,7 @@ export const detailCV = async (req: AccountRequest, res: Response) => {
 
     res.json({
       code: "success",
-      message: "Thành công!",
+      message: "Success!",
       infoCV: dataFinalCV,
       infoJob: dataFinalJob
     });
@@ -269,7 +250,7 @@ export const detailCV = async (req: AccountRequest, res: Response) => {
     console.error("Detail CV Error:", error);
     res.json({
       code: "error",
-      message: "Lỗi hệ thống, vui lòng thử lại sau!"
+      message: "System error, please try again later!"
     });
   }
 };
@@ -287,25 +268,25 @@ export const deleteCV = async (req: AccountRequest, res: Response) => {
     if (!infoCV) {
       return res.json({
         code: "error",
-        message: "Không tìm thấy hồ sơ ứng tuyển hoặc bạn không có quyền xóa!"
+        message: "Application not found or delete access denied!"
       });
     }
 
     await CV.deleteOne({
       _id: cvId,
-      email: userEmail // Bảo mật
+      email: userEmail
     });
 
     res.json({
       code: "success",
-      message: "Đã hủy bỏ hồ sơ ứng tuyển thành công!"
+      message: "Application withdrawn successfully!"
     });
 
   } catch (error) {
     console.error("Delete CV Error:", error);
     res.json({
       code: "error",
-      message: "Lỗi hệ thống, vui lòng thử lại sau!"
+      message: "System error, please try again later!"
     });
   }
 };

@@ -8,43 +8,39 @@ import 'filepond/dist/filepond.min.css';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
-import { Toaster, toast } from 'sonner'; // Sửa lại từ 'sound' thành 'sonner' (thư viện phổ biến)
+import { Toaster, toast } from 'sonner';
 
-// Đăng ký plugin cho FilePond
 registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview);
 
 export const FormProfile = () => {
   const { infoUser } = useAuth();
   const [avatars, setAvatars] = useState<any[]>([]);
-  const validatorRef = useRef<any>(null); // Dùng ref để quản lý validator
+  const validatorRef = useRef<any>(null);
 
   useEffect(() => {
     if (!infoUser) return;
 
-    // Hiển thị avatar cũ nếu có
     if (infoUser.avatar) {
       setAvatars([{ source: infoUser.avatar }]);
     }
 
-    // Khởi tạo JustValidate
     const validator = new JustValidate('#profileForm', {
         validateBeforeSubmitting: true,
     });
 
     validator
       .addField("#fullName", [
-        { rule: "required", errorMessage: "Vui lòng nhập họ tên!" },
-        { rule: 'minLength', value: 5, errorMessage: "Vui lòng nhập ít nhất 5 ký tự!" },
-        { rule: 'maxLength', value: 50, errorMessage: "Vui lòng nhập tối đa 50 ký tự!" },
+        { rule: "required", errorMessage: "Please enter your full name!" },
+        { rule: 'minLength', value: 5, errorMessage: "Must be at least 5 characters!" },
+        { rule: 'maxLength', value: 50, errorMessage: "Must be at most 50 characters!" },
       ])
       .addField("#email", [
-        { rule: "required", errorMessage: "Vui lòng nhập email!" },
-        { rule: "email", errorMessage: "Email không đúng định dạng!" },
+        { rule: "required", errorMessage: "Please enter your email!" },
+        { rule: "email", errorMessage: "Invalid email format!" },
       ]);
-    
+
     validatorRef.current = validator;
 
-    // Cleanup khi component unmount
     return () => {
         if (validatorRef.current) {
             validatorRef.current.destroy();
@@ -53,9 +49,8 @@ export const FormProfile = () => {
   }, [infoUser]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); // Rất quan trọng: Chặn reload trang mặc định
+    event.preventDefault();
 
-    // Kiểm tra tính hợp lệ trước khi gửi
     if (validatorRef.current) {
       validatorRef.current.revalidate().then((isValid: boolean) => {
         if (!isValid) return;
@@ -65,8 +60,7 @@ export const FormProfile = () => {
         formData.append("fullName", target.fullName.value);
         formData.append("email", target.email.value);
         formData.append("phone", target.phone.value);
-        
-        // Lấy file từ FilePond (avatars[0].file là File object)
+
         if (avatars.length > 0 && avatars[0].file) {
           formData.append("avatar", avatars[0].file);
         }
@@ -84,7 +78,7 @@ export const FormProfile = () => {
               toast.success(data.message);
             }
           })
-          .catch(() => toast.error("Đã có lỗi hệ thống xảy ra!"));
+          .catch(() => toast.error("A system error occurred!"));
       });
     }
   };
@@ -100,7 +94,7 @@ export const FormProfile = () => {
         >
           <div className="sm:col-span-2">
             <label htmlFor="fullName" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Họ tên *
+              Full Name *
             </label>
             <input
               type="text"
@@ -117,7 +111,7 @@ export const FormProfile = () => {
             </label>
             <FilePond
               name="avatar"
-              labelIdle='Kéo thả hoặc <span class="filepond--label-action">Chọn ảnh</span>'
+              labelIdle='Drag & drop or <span class="filepond--label-action">Choose image</span>'
               acceptedFileTypes={['image/*']}
               files={avatars}
               onupdatefiles={setAvatars}
@@ -139,7 +133,7 @@ export const FormProfile = () => {
 
           <div>
             <label htmlFor="phone" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Số điện thoại
+              Phone Number
             </label>
             <input
               type="text"
@@ -152,7 +146,7 @@ export const FormProfile = () => {
 
           <div className="sm:col-span-2">
             <button type="submit" className="bg-[#0088FF] hover:bg-opacity-90 transition-all rounded-[4px] h-[48px] px-[20px] font-[700] text-[16px] text-white">
-              Cập nhật
+              Update
             </button>
           </div>
         </form>

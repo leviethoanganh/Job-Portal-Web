@@ -6,7 +6,7 @@ export const list = async (req: Request, res: Response) => {
   
   res.json({
     code: "success",
-    message: "Thành công!",
+    message: "Success!",
     cityList: cityList
   });
 };

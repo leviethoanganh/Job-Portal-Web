@@ -8,10 +8,9 @@ import 'filepond/dist/filepond.min.css';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
-import { Toaster, toast } from 'sonner'; // Giả định bạn dùng 'sonner' thay vì 'sound' vì cú pháp tương đồng
+import { Toaster, toast } from 'sonner';
 import { EditorMCE } from "@/app/components/editor/EditorMCE";
 
-// Register the plugins
 registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview);
 
 export const FormProfile = () => {
@@ -22,7 +21,6 @@ export const FormProfile = () => {
 
   const editorRef = useRef<any>(null);
 
-  // Lấy danh sách thành phố
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/city/list`)
       .then(res => {
@@ -37,7 +35,6 @@ export const FormProfile = () => {
       .catch(err => console.log("City list fetch error:", err));
   }, []);
 
-  // Khởi tạo Validation và nạp dữ liệu cũ
   useEffect(() => {
     if (!infoCompany) return;
 
@@ -56,22 +53,22 @@ export const FormProfile = () => {
       .addField("#companyName", [
         {
           rule: "required",
-          errorMessage: "Vui lòng nhập tên công ty!",
+          errorMessage: "Please enter company name!",
         },
         {
           rule: 'maxLength',
           value: 200,
-          errorMessage: "Vui lòng nhập tối đa 200 ký tự!",
+          errorMessage: "Must be at most 200 characters!",
         },
       ])
       .addField("#email", [
         {
           rule: "required",
-          errorMessage: "Vui lòng nhập email!",
+          errorMessage: "Please enter your email!",
         },
         {
           rule: "email",
-          errorMessage: "Email không đúng định dạng!",
+          errorMessage: "Invalid email format!",
         },
       ])
       .onFail(() => {
@@ -87,12 +84,11 @@ export const FormProfile = () => {
   }, [infoCompany]);
 
   const handleSubmit = (event: any) => {
-    event.preventDefault(); // Quan trọng: Ngăn chặn reload trang
+    event.preventDefault();
 
     if (isValid) {
       const formData = new FormData();
 
-      // Lấy dữ liệu từ form
       formData.append("companyName", event.target.companyName.value);
       formData.append("city", event.target.city.value);
       formData.append("address", event.target.address.value);
@@ -107,7 +103,6 @@ export const FormProfile = () => {
         formData.append("description", editorRef.current.getContent());
       }
 
-      // Xử lý logo từ FilePond
       if (logos.length > 0 && logos[0].file) {
         formData.append("logo", logos[0].file);
       }
@@ -126,11 +121,11 @@ export const FormProfile = () => {
           }
         })
         .catch(err => {
-          toast.error("Có lỗi xảy ra khi cập nhật!");
+          toast.error("An error occurred while updating!");
           console.error(err);
         });
     } else {
-      toast.error("Vui lòng kiểm tra lại thông tin form!");
+      toast.error("Please check the form information!");
     }
   };
 
@@ -143,10 +138,10 @@ export const FormProfile = () => {
           id="profileForm"
           onSubmit={handleSubmit}
         >
-          {/* Tên công ty */}
+          {/* Company Name */}
           <div className="sm:col-span-2">
             <label htmlFor="companyName" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Tên công ty *
+              Company Name *
             </label>
             <input
               type="text"
@@ -164,17 +159,17 @@ export const FormProfile = () => {
             </label>
             <FilePond
               name="logo"
-              labelIdle='Kéo thả hoặc <span class="filepond--label-action">Chọn ảnh</span>'
+              labelIdle='Drag & drop or <span class="filepond--label-action">Choose image</span>'
               acceptedFileTypes={['image/*']}
               files={logos}
               onupdatefiles={setLogos}
             />
           </div>
 
-          {/* Thành phố */}
+          {/* City */}
           <div>
             <label htmlFor="city" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Thành phố
+              City
             </label>
             <select
               name="city"
@@ -190,10 +185,10 @@ export const FormProfile = () => {
             </select>
           </div>
 
-          {/* Địa chỉ */}
+          {/* Address */}
           <div>
             <label htmlFor="address" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Địa chỉ
+              Address
             </label>
             <input
               type="text"
@@ -204,10 +199,9 @@ export const FormProfile = () => {
             />
           </div>
 
-          {/* Các trường khác giữ nguyên cấu trúc */}
           <div>
             <label htmlFor="companyModel" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Mô hình công ty
+              Company Model
             </label>
             <input
               type="text"
@@ -220,7 +214,7 @@ export const FormProfile = () => {
 
           <div>
             <label htmlFor="companyEmployees" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Quy mô công ty
+              Company Size
             </label>
             <input
               type="text"
@@ -233,7 +227,7 @@ export const FormProfile = () => {
 
           <div>
             <label htmlFor="workingTime" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Thời gian làm việc
+              Working Hours
             </label>
             <input
               type="text"
@@ -246,7 +240,7 @@ export const FormProfile = () => {
 
           <div>
             <label htmlFor="workOvertime" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Làm việc ngoài giờ
+              Overtime
             </label>
             <input
               type="text"
@@ -272,7 +266,7 @@ export const FormProfile = () => {
 
           <div>
             <label htmlFor="phone" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Số điện thoại
+              Phone Number
             </label>
             <input
               type="text"
@@ -285,7 +279,7 @@ export const FormProfile = () => {
 
           <div className="sm:col-span-2">
             <label htmlFor="description" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Mô tả chi tiết
+              Description
             </label>
             < EditorMCE
               editorRef={editorRef}
@@ -299,7 +293,7 @@ export const FormProfile = () => {
               type="submit"
               className="bg-[#0088FF] rounded-[4px] h-[48px] px-[20px] font-[700] text-[16px] text-white hover:bg-[#0077ee] transition-colors"
             >
-              Cập nhật
+              Update
             </button>
           </div>
         </form>

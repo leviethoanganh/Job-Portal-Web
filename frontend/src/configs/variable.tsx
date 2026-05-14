@@ -28,32 +28,32 @@ export const positionList = [
 export const workingFormList = [
   {
     value: "office",
-    label: "Tại văn phòng",
+    label: "At office",
   },
   {
     value: "remote",
-    label: "Làm từ xa",
+    label: "Remote",
   },
   {
     value: "flexible",
-    label: "Linh hoạt",
+    label: "Flexible",
   },
 ];
 
 export const cvStatusList = [
   {
     value: "initial",
-    label: "Chưa duyệt",
+    label: "Pending",
     color: "#121212"
   },
   {
     value: "approved",
-    label: "Đã duyệt",
+    label: "Approved",
     color: "#9FDB7C"
   },
   {
     value: "rejected",
-    label: "Từ chối",
+    label: "Rejected",
     color: "#FF5100"
   }
 ];

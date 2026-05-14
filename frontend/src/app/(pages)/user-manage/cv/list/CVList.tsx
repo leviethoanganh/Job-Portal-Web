@@ -6,7 +6,7 @@ import { cvStatusList, positionList, workingFormList } from "@/configs/variable"
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaBriefcase, FaCircleCheck, FaUserTie } from "react-icons/fa6";
-import { toast } from "sonner"; // Thêm toast để thông báo
+import { toast } from "sonner";
 
 export const CVList = () => {
   const [listCV, setListCV] = useState<any[]>([]);
@@ -14,7 +14,7 @@ export const CVList = () => {
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/cv/list`, {
       method: "GET",
-      credentials: "include", // Gửi kèm cookie để xác thực người dùng
+      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => {
@@ -22,12 +22,11 @@ export const CVList = () => {
           setListCV(data.listCV || []);
         }
       })
-      .catch((err) => console.error("Lỗi fetch CV:", err));
+      .catch((err) => console.error("CV fetch error:", err));
   }, []);
 
-  // Xử lý Xóa CV
   const handleDeleteCV = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa hồ sơ ứng tuyển này?")) return;
+    if (!confirm("Are you sure you want to delete this application?")) return;
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/cv/delete/${id}`, {
@@ -37,14 +36,13 @@ export const CVList = () => {
       const data = await res.json();
 
       if (data.code === "success") {
-        toast.success(data.message || "Xóa thành công!");
-        // Update state to remove the deleted CV
+        toast.success(data.message || "Deleted successfully!");
         setListCV((prev) => prev.filter((item) => item.id !== id));
       } else {
-        toast.error(data.message || "Xóa thất bại!");
+        toast.error(data.message || "Delete failed!");
       }
     } catch (error) {
-      toast.error("Đã xảy ra lỗi khi xóa!");
+      toast.error("An error occurred while deleting!");
     }
   };
 
@@ -52,7 +50,6 @@ export const CVList = () => {
     <>
       <div className="grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-[20px]">
         {listCV.map((item) => {
-          // Tìm nhãn (label) tương ứng từ file config
           const position = positionList.find((pos) => pos.value == item.jobPosition);
           const workingForm = workingFormList.find((form) => form.value == item.jobWorkingForm);
           const status = cvStatusList.find((itemStatus) => itemStatus.value == item.status);
@@ -76,7 +73,7 @@ export const CVList = () => {
               </h3>
 
               <div className="mt-[12px] text-center font-[400] text-[14px] text-black z-10">
-                Công ty: <span className="font-[700]">{item.companyName}</span>
+                Company: <span className="font-[700]">{item.companyName}</span>
               </div>
 
               <div className="mt-[6px] text-center font-[600] text-[16px] text-[#0088FF] z-10">
@@ -95,7 +92,7 @@ export const CVList = () => {
                 className="mt-[6px] flex justify-center items-center gap-[8px] font-[400] text-[14px] z-10"
                 style={{ color: status?.color || "#121212" }}
               >
-                <FaCircleCheck className="text-[16px]" /> {status?.label || "Đang xử lý"}
+                <FaCircleCheck className="text-[16px]" /> {status?.label || "Processing"}
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-[8px] mt-[12px] mb-[20px] mx-[10px] z-10">
@@ -103,13 +100,13 @@ export const CVList = () => {
                   href={`/user-manage/cv/detail/${item.id}`}
                   className="bg-[#0088FF] rounded-[4px] font-[400] text-[14px] text-white inline-block py-[8px] px-[20px] hover:bg-opacity-80 transition-all"
                 >
-                  Xem
+                  View
                 </Link>
                 <button
                   onClick={() => handleDeleteCV(item.id)}
                   className="bg-[#FF0000] rounded-[4px] font-[400] text-[14px] text-white inline-block py-[8px] px-[20px] hover:bg-opacity-80 transition-all cursor-pointer"
                 >
-                  Xóa
+                  Delete
                 </button>
               </div>
             </div>
@@ -117,12 +114,12 @@ export const CVList = () => {
         })}
       </div>
 
-      {/* Phân trang (Placeholder) */}
+      {/* Pagination Placeholder */}
       <div className="mt-[30px]">
         <select className="border border-[#DEDEDE] rounded-[8px] py-[12px] px-[18px] font-[400] text-[16px] text-[#414042]">
-          <option value="1">Trang 1</option>
-          <option value="2">Trang 2</option>
-          <option value="3">Trang 3</option>
+          <option value="1">Page 1</option>
+          <option value="2">Page 2</option>
+          <option value="3">Page 3</option>
         </select>
       </div>
     </>

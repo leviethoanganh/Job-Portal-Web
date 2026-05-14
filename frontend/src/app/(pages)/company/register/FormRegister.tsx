@@ -8,63 +8,61 @@ export const FormRegister = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Khởi tạo bộ kiểm tra dữ liệu khi Component được gắn vào DOM
     const validator = new JustValidate("#registerForm");
 
     validator
       .addField("#companyName", [
         {
           rule: "required",
-          errorMessage: "Vui lòng nhập tên công ty!",
+          errorMessage: "Please enter company name!",
         },
         {
           rule: "maxLength",
           value: 200,
-          errorMessage: "Vui lòng nhập tối đa 200 ký tự!",
+          errorMessage: "Must be at most 200 characters!",
         },
       ])
       .addField("#email", [
         {
           rule: "required",
-          errorMessage: "Vui lòng nhập email!",
+          errorMessage: "Please enter your email!",
         },
         {
           rule: "email",
-          errorMessage: "Email không đúng định dạng!",
+          errorMessage: "Invalid email format!",
         },
       ])
       .addField("#password", [
         {
           rule: "required",
-          errorMessage: "Vui lòng nhập mật khẩu!",
+          errorMessage: "Please enter your password!",
         },
         {
           rule: "minLength",
           value: 8,
-          errorMessage: "Mật khẩu phải có ít nhất 8 ký tự!",
+          errorMessage: "Password must be at least 8 characters!",
         },
         {
           rule: "customRegexp",
           value: /[a-z]/,
-          errorMessage: "Mật khẩu phải chứa ký tự thường!",
+          errorMessage: "Password must contain a lowercase letter!",
         },
         {
           rule: "customRegexp",
           value: /[A-Z]/,
-          errorMessage: "Mật khẩu phải chứa ký tự hoa!",
+          errorMessage: "Password must contain an uppercase letter!",
         },
         {
           rule: "customRegexp",
           value: /\d/,
-          errorMessage: "Mật khẩu phải chứa chữ số!",
+          errorMessage: "Password must contain a number!",
         },
         {
           rule: "customRegexp",
           value: /[^A-Za-z0-9]/,
-          errorMessage: "Mật khẩu phải chứa ký tự đặc biệt!",
+          errorMessage: "Password must contain a special character!",
         },
       ])
-      // Chỉ thực hiện gửi dữ liệu khi tất cả các trường đều hợp lệ
       .onSuccess((event: any) => {
         const formData = event.target;
         const dataFinal = {
@@ -73,7 +71,6 @@ export const FormRegister = () => {
           password: formData.password.value,
         };
 
-        // Gửi yêu cầu đăng ký tới endpoint dành riêng cho công ty
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/company/register`, {
           method: "POST",
           headers: {
@@ -87,7 +84,6 @@ export const FormRegister = () => {
               alert(data.message);
             }
             if (data.code === "success") {
-              // Chuyển hướng sang trang đăng nhập của công ty
               router.push("/company/login");
             }
           });
@@ -100,7 +96,7 @@ export const FormRegister = () => {
         {/* Company Name Field */}
         <div>
           <label htmlFor="companyName" className="block font-[500] text-[14px] text-black mb-[5px]">
-            Tên công ty *
+            Company Name *
           </label>
           <input
             type="text"
@@ -126,7 +122,7 @@ export const FormRegister = () => {
         {/* Password Field */}
         <div>
           <label htmlFor="password" className="block font-[500] text-[14px] text-black mb-[5px]">
-            Mật khẩu *
+            Password *
           </label>
           <input
             type="password"
@@ -139,7 +135,7 @@ export const FormRegister = () => {
         {/* Submit Button */}
         <div>
           <button className="bg-[#0088FF] hover:bg-opacity-90 cursor-pointer active:scale-95 transition-all rounded-[4px] w-[100%] h-[48px] px-[20px] font-[700] text-[16px] text-white">
-            Đăng ký
+            Sign Up
           </button>
         </div>
       </form>

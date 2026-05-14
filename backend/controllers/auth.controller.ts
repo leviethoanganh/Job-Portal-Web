@@ -5,29 +5,26 @@ import  AccountCompany  from  "../models/account-company.model" ;
 
 export const check = async (req: Request, res: Response) => {
   try {
-    // 1. Lấy token từ Cookie mà trình duyệt gửi lên
     const token = req.cookies.token;
 
     if (!token) {
-      console.log("--- [Controller Check] Không có token để kiểm tra ---");
+      console.log("--- [Controller Check] No token found ---");
       return res.json({
         code: "error",
-        message: "Token không hợp lệ!",
+        message: "Invalid token!",
       });
     }
 
-    // 2. Giải mã token bằng Secret Key
     const decoded = jwt.verify(token, `${process.env.JWT_SECRET}`) as jwt.JwtPayload;
     const { id, email } = decoded;
 
-    // 3. Truy vấn Database để đảm bảo tài khoản vẫn tồn tại
     const existAccountUser = await AccountUser.findOne({
       _id: id,
       email: email,
     });
 
     if ( existAccountUser )  {
-      console.log("--- [Controller Check] Khớp User:", existAccountUser.fullName);
+      console.log("--- [Controller Check] Matched User:", existAccountUser.fullName);
       const  infoUser = {
         id :  existAccountUser.id,
         fullName :  existAccountUser.fullName ,
@@ -38,21 +35,20 @@ export const check = async (req: Request, res: Response) => {
 
       res.json({
         code: "success",
-        message: "Token hợp lệ!",
+        message: "Token is valid!",
         infoUser: infoUser,
       });
 
       return;
     }
-    
+
     const existAccountCompany = await AccountCompany.findOne({
         _id: id,
         email: email
       });
 
-    // 2. Trường hợp tìm thấy tài khoản hợp lệ
     if (existAccountCompany) {
-      console.log("--- [Controller Check] Khớp Company:", existAccountCompany.companyName);
+      console.log("--- [Controller Check] Matched Company:", existAccountCompany.companyName);
       const infoCompany = {
         id: existAccountCompany._id,
         companyName: existAccountCompany.companyName,
@@ -68,38 +64,33 @@ export const check = async (req: Request, res: Response) => {
         logo: existAccountCompany.logo,
       };
 
-      // Trả về kết quả thành công
       return res.json({
         code: "success",
-        message: "Token hợp lệ!",
+        message: "Token is valid!",
         infoCompany: infoCompany
-        // Đã xóa infoUser vì không xác định được biến này từ đâu ra
       });
     }
 
-    // 3. Trường hợp không tìm thấy tài khoản (Token giả mạo hoặc user đã bị xóa)
     res.clearCookie("token");
     return res.json({
       code: "error",
-      message: "Token không hợp lệ hoặc tài khoản không tồn tại!"
+      message: "Invalid token or account not found!"
     });
 
   } catch (error) {
     console.log(error);
     res.json({
       code: "error",
-      message: "Token không hợp lệ!",
+      message: "Invalid token!",
     });
   }
 };
 
 export const logout = async (req: Request, res: Response) => {
-  // 1. Xóa cookie có tên "token" khỏi trình duyệt của người dùng
   res.clearCookie("token");
 
-  // 2. Phản hồi về Frontend để thực hiện chuyển trang
   res.json({
     code: "success",
-    message: "Đã đăng xuất!",
+    message: "Logged out!",
   });
 };

@@ -2,9 +2,22 @@
 import Link from "next/link";
 import  {  useRouter  }  from  "next/navigation"
 import { FaMagnifyingGlass } from "react-icons/fa6";
+import { useEffect, useState } from "react";
 
 export const Section1 = () => {
   const router = useRouter();
+  const [cityList, setCityList] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/city/list`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.code === "success") {
+          setCityList(data.cityList);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSearch = (event: any) => {
     event.preventDefault();
@@ -16,49 +29,44 @@ export const Section1 = () => {
     if (keyword) params.append("keyword", keyword);
 
     router.push(`/search?${params.toString()}`);
-    //  router.push(`/search?city=${city}&keyword=${keyword}`);
   };
 
   return (
     <>
       <div className="bg-[#000065] py-[60px]">
         <div className="contain">
-          {/* Tiêu đề chính của Section */}
           <h1 className="font-[700] text-[28px] text-white mb-[30px] text-center">
-            887 Việc làm IT cho Developer "Chất"
+            887 IT Jobs for Quality Developers
           </h1>
 
-          {/* Form tìm kiếm với cấu trúc Flexbox Responsive */}
           <form
             onSubmit={handleSearch}
             className="flex gap-x-[15px] gap-y-[12px] mb-[30px] md:flex-nowrap flex-wrap"
           >
-            {/* Lựa chọn địa điểm */}
-            <select name = "city" className="md:w-[240px] w-[100%] h-[56px] rounded-[4px] px-[20px] font-[500] text-[16px] text-[#121212] bg-white">
-              <option value="">Tất cả</option>
-              <option value="Hà Nội">Hà Nội</option>
-              <option value="Đà Nẵng">Đà Nẵng</option>
-              <option value="Hồ Chí Minh">Hồ Chí Minh</option>
+            <select name="city" className="md:w-[240px] w-[100%] h-[56px] rounded-[4px] px-[20px] font-[500] text-[16px] text-[#121212] bg-white">
+              <option value="">All</option>
+              {cityList.map((item, index) => (
+                <option key={index} value={item.name}>
+                  {item.name}
+                </option>
+              ))}
             </select>
 
-            {/* Ô nhập từ khóa tìm kiếm */}
             <input
               type="text"
               className="flex-1 h-[56px] rounded-[4px] px-[20px] font-[500] text-[16px] text-[#121212] bg-white"
-              placeholder="Nhập từ khoá..."
+              placeholder="Enter keyword..."
               name="keyword"
             />
 
-            {/* Nút Tìm kiếm sử dụng biến màu primary */}
             <button className="md:w-[240px] w-[100%] h-[56px] bg-primary rounded-[4px] text-white font-[500] text-[16px] flex items-center justify-center hover:opacity-90 transition-opacity">
-              <FaMagnifyingGlass className="text-[20px] mr-[5px]" /> Tìm Kiếm
+              <FaMagnifyingGlass className="text-[20px] mr-[5px]" /> Search
             </button>
           </form>
 
-          {/* Khu vực gợi ý từ khóa tìm kiếm phổ biến */}
           <div className="flex gap-x-[12px] gap-y-[15px] items-center flex-wrap">
             <div className="font-[500] text-[16px] text-[#DEDEDE]">
-              Mọi người đang tìm kiếm:
+              People are searching for:
             </div>
             <div className="flex flex-wrap gap-[10px]">
               <Link

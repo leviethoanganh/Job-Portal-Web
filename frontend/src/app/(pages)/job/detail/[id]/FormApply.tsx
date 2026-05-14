@@ -2,7 +2,7 @@
 
 import JustValidate from "just-validate";
 import { useEffect } from "react";
-import { Toaster, toast } from 'sonner'; // Sửa từ 'sound' thành 'sonner' (thư viện phổ biến đi kèm richColors)
+import { Toaster, toast } from 'sonner';
 
 export const FormApply = (props: { jobId: string }) => {
     const { jobId } = props;
@@ -14,44 +14,44 @@ export const FormApply = (props: { jobId: string }) => {
             .addField('#fullName', [
                 {
                     rule: 'required',
-                    errorMessage: 'Vui lòng nhập họ tên!'
+                    errorMessage: 'Please enter your full name!'
                 },
                 {
                     rule: 'minLength',
                     value: 5,
-                    errorMessage: 'Họ tên phải có ít nhất 5 ký tự!'
+                    errorMessage: 'Full name must be at least 5 characters!'
                 },
                 {
                     rule: 'maxLength',
                     value: 50,
-                    errorMessage: 'Họ tên không được vượt quá 50 ký tự!'
+                    errorMessage: 'Full name must not exceed 50 characters!'
                 },
             ])
             .addField('#email', [
                 {
                     rule: 'required',
-                    errorMessage: 'Vui lòng nhập email của bạn!'
+                    errorMessage: 'Please enter your email!'
                 },
                 {
                     rule: 'email',
-                    errorMessage: 'Email không đúng định dạng!'
+                    errorMessage: 'Invalid email format!'
                 },
             ])
             .addField('#phone', [
                 {
                     rule: 'required',
-                    errorMessage: 'Vui lòng nhập số điện thoại!'
+                    errorMessage: 'Please enter your phone number!'
                 },
                 {
                     rule: 'customRegexp',
-                    value: /(84|0[3|5|7|8|9])([0-9]{8})\b/g, // Sửa lại Regex một chút cho chuẩn
-                    errorMessage: 'Số điện thoại không đúng định dạng!'
+                    value: /(84|0[3|5|7|8|9])([0-9]{8})\b/g,
+                    errorMessage: 'Invalid phone number format!'
                 },
             ])
             .addField('#fileCV', [
                 {
                     rule: 'required',
-                    errorMessage: 'Vui lòng chọn file CV!'
+                    errorMessage: 'Please select a CV file!'
                 },
                 {
                     validator: (value: any, fields: any) => {
@@ -59,7 +59,7 @@ export const FormApply = (props: { jobId: string }) => {
                         if (!file) return false;
                         return file.type === 'application/pdf';
                     },
-                    errorMessage: 'File phải là định dạng PDF!'
+                    errorMessage: 'File must be in PDF format!'
                 },
                 {
                     validator: (value: any, fields: any) => {
@@ -67,7 +67,7 @@ export const FormApply = (props: { jobId: string }) => {
                         if (!file) return false;
                         return file.size <= 5 * 1024 * 1024; // 5MB
                     },
-                    errorMessage: 'Dung lượng file tối đa là 5MB!'
+                    errorMessage: 'Maximum file size is 5MB!'
                 },
             ])
             .onSuccess((event: any) => {
@@ -92,16 +92,16 @@ export const FormApply = (props: { jobId: string }) => {
                         if (data.code === "success") {
                             toast.success(data.message);
                             form.reset();
-                            validator.refresh(); // Làm mới validator sau khi reset form
+                            validator.refresh();
                         }
                     })
                     .catch(() => {
-                        toast.error("Gửi yêu cầu thất bại. Vui lòng thử lại!");
+                        toast.error("Request failed. Please try again!");
                     });
             });
 
         return () => {
-            validator.destroy(); // Dọn dẹp validator khi component bị unmount
+            validator.destroy();
         };
     }, [jobId]);
 
@@ -111,7 +111,7 @@ export const FormApply = (props: { jobId: string }) => {
             <form action="" id="applyForm" className="space-y-[15px]">
                 <div>
                     <label htmlFor="fullName" className="block font-[500] text-[14px] text-black mb-[5px]">
-                        Họ tên *
+                        Full Name *
                     </label>
                     <input
                         type="text"
@@ -135,7 +135,7 @@ export const FormApply = (props: { jobId: string }) => {
 
                 <div>
                     <label htmlFor="phone" className="block font-[500] text-[14px] text-black mb-[5px]">
-                        Số điện thoại *
+                        Phone Number *
                     </label>
                     <input
                         type="text"
@@ -147,7 +147,7 @@ export const FormApply = (props: { jobId: string }) => {
 
                 <div>
                     <label htmlFor="fileCV" className="block font-[500] text-[14px] text-black mb-[5px]">
-                        File CV (PDF) *
+                        CV File (PDF) *
                     </label>
                     <input
                         type="file"
@@ -159,7 +159,7 @@ export const FormApply = (props: { jobId: string }) => {
                 </div>
 
                 <button type="submit" className="w-[100%] h-[48px] rounded-[4px] bg-primary font-[700] text-[16px] text-white hover:opacity-90 transition-all">
-                    Gửi CV ứng tuyển
+                    Submit CV Application
                 </button>
             </form>
         </>

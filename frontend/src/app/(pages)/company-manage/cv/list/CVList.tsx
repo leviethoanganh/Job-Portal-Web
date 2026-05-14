@@ -22,7 +22,7 @@ export const CVList = () => {
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/company/cv/list`, {
       method: "GET",
-      credentials: "include", // Required for sending cookies/session
+      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => {
@@ -41,7 +41,7 @@ export const CVList = () => {
   const handleChangeStatus = (id: string, status: string) => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/company/cv/change-status`, {
       method: "PATCH",
-      credentials: "include", // Gửi kèm cookie để xác thực session công ty
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -53,25 +53,23 @@ export const CVList = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.code === "success") {
-          // count + 1 để kích hoạt useEffect fetch lại dữ liệu mới
           setCount((prev) => prev + 1);
-          // Bạn có thể thêm thông báo thành công ở đây (vd: toast.success)
         } else {
-          console.error("Cập nhật trạng thái thất bại:", data.message);
+          console.error("Status update failed:", data.message);
         }
       })
       .catch((err) => {
-        console.error("Lỗi khi kết nối API:", err);
+        console.error("API connection error:", err);
       });
   };
 
   const handleDelete = (id: string) => {
-    const result = window.confirm("Bạn có chắc muốn xóa CV này?");
+    const result = window.confirm("Are you sure you want to delete this CV?");
 
     if (result) {
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/company/cv/delete/${id}`, {
         method: "DELETE",
-        credentials: "include", // Gửi kèm cookie để xác thực quyền công ty
+        credentials: "include",
       })
         .then((res) => res.json())
         .then((data) => {
@@ -81,13 +79,12 @@ export const CVList = () => {
 
           if (data.code === "success") {
             toast.success(data.message);
-            // Sử dụng callback để đảm bảo giá trị count mới nhất
             setCount((prev) => prev + 1);
           }
         })
         .catch((err) => {
           console.error("Delete error:", err);
-          toast.error("Có lỗi xảy ra khi kết nối máy chủ");
+          toast.error("An error occurred while connecting to the server");
         });
     }
   };
@@ -97,7 +94,6 @@ export const CVList = () => {
       <Toaster position="top-right" richColors />
       <div className="grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-[20px]">
         {listCV.map((item) => {
-          // Logic to find labels from config constants
           const position = positionList.find((pos) => pos.value == item.jobPosition);
           const workingForm = workingFormList.find((form) => form.value == item.jobWorkingForm);
           const status = cvStatusList.find((itemStatus) => itemStatus.value == item.status);
@@ -121,7 +117,7 @@ export const CVList = () => {
               </h3>
 
               <div className="mt-[12px] text-center font-[400] text-[14px] text-black z-10">
-                Ứng viên: <span className="font-[700]">{item.fullName}</span>
+                Candidate: <span className="font-[700]">{item.fullName}</span>
               </div>
 
               <div className="mt-[6px] flex justify-center items-center gap-[8px] font-[400] text-[14px] text-[#121212] z-10">
@@ -145,20 +141,20 @@ export const CVList = () => {
               </div>
 
               <div className={`mt-[6px] flex justify-center items-center gap-[8px] font-[400] text-[14px] z-10 ${item.viewed ? "text-[#121212]" : "text-[#FF0000]"}`}>
-                <FaEye className="text-[16px]" /> {item.viewed ? "Đã xem" : "Chưa xem"}
+                <FaEye className="text-[16px]" /> {item.viewed ? "Viewed" : "Not viewed"}
               </div>
 
               <div
                 className="mt-[6px] flex justify-center items-center gap-[8px] font-[400] text-[14px] z-10"
                 style={{ color: status?.color || "#000" }}
               >
-                <FaCircleCheck className="text-[16px]" /> {status?.label || "Chờ xử lý"}
+                <FaCircleCheck className="text-[16px]" /> {status?.label || "Pending"}
               </div>
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center justify-center gap-[8px] mt-[12px] mb-[20px] mx-[10px] z-10">
                 <Link href={`/company-manage/cv/detail/${item.id}`} className="bg-[#0088FF] rounded-[4px] font-[400] text-[14px] text-white py-[8px] px-[20px]">
-                  Xem
+                  View
                 </Link>
                 {item.status !== "approved" && (
                   <>
@@ -166,14 +162,14 @@ export const CVList = () => {
                       className="bg-[#9FDB7C] rounded-[4px] font-[400] text-[14px] text-black inline-block py-[8px] px-[20px] hover:opacity-80 transition-all"
                       onClick={() => handleChangeStatus(item.id, "approved")}
                     >
-                      Duyệt
+                      Approve
                     </button>
 
                     <button
                       className="bg-[#FF5100] rounded-[4px] font-[400] text-[14px] text-white inline-block py-[8px] px-[20px] hover:opacity-80 transition-all"
                       onClick={() => handleChangeStatus(item.id, "rejected")}
                     >
-                      Từ chối
+                      Reject
                     </button>
                   </>
                 )}
@@ -181,7 +177,7 @@ export const CVList = () => {
                   className="bg-[#FF0000] rounded-[4px] font-[400] text-[14px] text-white inline-block py-[8px] px-[20px] hover:bg-opacity-80 transition-all"
                   onClick={() => handleDelete(item.id)}
                 >
-                  Xóa
+                  Delete
                 </button>
               </div>
             </div>
@@ -192,9 +188,9 @@ export const CVList = () => {
       {/* Pagination Placeholder */}
       <div className="mt-[30px]">
         <select className="border border-[#DEDEDE] rounded-[8px] py-[12px] px-[18px] font-[400] text-[16px] text-[#414042]">
-          <option value="1">Trang 1</option>
-          <option value="2">Trang 2</option>
-          <option value="3">Trang 3</option>
+          <option value="1">Page 1</option>
+          <option value="2">Page 2</option>
+          <option value="3">Page 3</option>
         </select>
       </div>
     </>

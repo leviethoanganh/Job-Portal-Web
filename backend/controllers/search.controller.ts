@@ -11,36 +11,30 @@ export const search = async (req: Request, res: Response) => {
   try {
     const find: any = {};
 
-    // 1. Ép kiểu query về string
     const language = req.query.language as string;
     const cityQuery = req.query.city as string;
 
-    // 2. Lọc theo ngôn ngữ
     if (language) {
       find.technologies = { $regex: language, $options: "i" };
     }
 
-    // 3. Lọc theo thành phố
     if (cityQuery) {
-      // Tìm thành phố (ép kiểu any để tránh lỗi overload khi dùng $regex)
       const cityInfo = await City.findOne({
         name: { $regex: cityQuery, $options: "i" }
       } as any);
 
       if (cityInfo) {
-        // LỖI TẠI ĐÂY: Ép kiểu _id về string để khớp với định nghĩa String trong Model
         const listAccountCompanyInCity = await AccountCompany.find({
           city: cityInfo._id.toString()
         } as any);
 
-        // Lấy mảng ID công ty (ép về string)
         const companyIds = listAccountCompanyInCity.map((item: any) => item._id.toString());
 
         find.companyId = {
           $in: companyIds
         };
       } else {
-        return res.json({ code: "success", jobs: [] });
+        return res.json({ code: "success", message: "No city found!", jobs: [], totalRecord: 0, totalPage: 1 });
       }
     }
 
@@ -81,7 +75,6 @@ export const search = async (req: Request, res: Response) => {
 
     const skip = (page - 1) * limitItems;
 
-    // 4. Truy vấn Job
     const jobs = await Job.find(find).sort({ createdAt: "desc" } as any).skip(skip).limit(limitItems);
 
     for (const item of jobs) {
@@ -116,17 +109,17 @@ export const search = async (req: Request, res: Response) => {
 
     res.json({
       code: "success",
-      message: "Thành công!",
+      message: "Success!",
       jobs: dataFinal,
       totalRecord: totalRecord,
       totalPage: totalPage
     });
 
   } catch (error) {
-    console.error("Lỗi Search API:", error);
+    console.error("Search API error:", error);
     res.json({
       code: "error",
-      message: "Lỗi hệ thống!"
+      message: "System error!"
     });
   }
 };

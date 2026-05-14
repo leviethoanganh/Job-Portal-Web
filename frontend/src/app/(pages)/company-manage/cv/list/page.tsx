@@ -15,9 +15,8 @@ export default function Page() {
     <>
       <div className="py-[60px]">
         <div className="contain">
-          {/* Tiêu đề trang - Tự động dãn rộng trên mobile */}
           <h2 className="font-[700] sm:text-[28px] text-[24px] sm:w-auto w-[100%] text-[#121212] mb-[20px]">
-            Quản lý CV
+            Manage CVs
           </h2>
 
           <CVList />

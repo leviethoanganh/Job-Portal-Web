@@ -24,7 +24,6 @@ export const SectionSearch = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    // Sử dụng URLSearchParams để tự động mã hóa Hà Nội -> H%C3%A0%20N%E1%BB%99i
     const query = new URLSearchParams();
     if (language) query.append("language", language);
     if (city) query.append("city", city);
@@ -45,7 +44,7 @@ export const SectionSearch = () => {
         setIsLoading(false);
       })
       .catch(() => setIsLoading(false));
-  }, [language, city, company, keyword, position, workingForm, page]); // Tự động fetch lại khi 'language', 'city', 'company' hoặc 'keyword' trên URL thay đổi
+  }, [language, city, company, keyword, position, workingForm, page]);
 
   const handleFilterPosition = (event: any) => {
     const value = event.target.value;
@@ -87,20 +86,20 @@ export const SectionSearch = () => {
       <div className="contain mx-auto">
         <h2 className="mb-[30px] font-[700] text-[28px] text-[#121212]">
           <span>
-            {isLoading ? "Đang tìm kiếm" : `${totalRecord} việc làm`}
+            {isLoading ? "Searching" : `${totalRecord} job(s)`}
           </span>
           <span className="text-[#0088FF] ml-[10px] italic">
             {language} {city} {company} {keyword}
           </span>
         </h2>
 
-        {/* Bộ lọc (Filter Bar) */}
+        {/* Filter Bar */}
         <div
           className="py-[15px] px-[20px] rounded-[8px] flex flex-wrap gap-[12px] mb-[30px] bg-white"
           style={{ boxShadow: "0px 4px 20px 0px #0000000F" }}
         >
           <select className="h-[36px] border border-[#DEDEDE] rounded-[20px] px-[18px] font-[400] text-[14px] text-[#414042] outline-none focus:border-primary" onChange={handleFilterPosition} defaultValue={position}>
-            <option value="">Cấp bậc</option>
+            <option value="">Position</option>
             {positionList.map(item => (
               <option key={item.value} value={item.value}>
                 {item.label}
@@ -108,7 +107,7 @@ export const SectionSearch = () => {
             ))}
           </select>
           <select className="h-[36px] border border-[#DEDEDE] rounded-[20px] px-[18px] font-[400] text-[14px] text-[#414042] outline-none focus:border-primary" onChange={handleFilterWorkingForm} defaultValue={workingForm}>
-            <option value="">Hình thức làm việc</option>
+            <option value="">Working Form</option>
             {workingFormList.map(item => (
               <option key={item.value} value={item.value}>
                 {item.label}
@@ -117,10 +116,10 @@ export const SectionSearch = () => {
           </select>
         </div>
 
-        {/* Danh sách công việc */}
+        {/* Job List */}
         <div className="relative min-h-[100px]">
           {isLoading ? (
-            <div className="text-center py-10 text-gray-500">Đang tải dữ liệu...</div>
+            <div className="text-center py-10 text-gray-500">Loading...</div>
           ) : (
             <div className="grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-[20px]">
               {jobList.length > 0 ? (
@@ -129,14 +128,14 @@ export const SectionSearch = () => {
                 ))
               ) : (
                 <div className="col-span-full text-center py-10 bg-gray-50 rounded-lg">
-                  Không tìm thấy việc làm nào phù hợp.
+                  No matching jobs found.
                 </div>
               )}
             </div>
           )}
         </div>
 
-        {/* Phân trang (Pagination) */}
+        {/* Pagination */}
         {jobList.length > 0 && (
           <div className="mt-[40px] flex justify-center">
             <select
@@ -145,7 +144,7 @@ export const SectionSearch = () => {
             >
               {Array(totalPage).fill("").map((item, index) => (
                 <option value={index + 1} key={index}>
-                  Trang {index + 1}
+                  Page {index + 1}
                 </option>
               ))}
             </select>

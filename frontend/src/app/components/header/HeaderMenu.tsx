@@ -28,12 +28,12 @@ export const HeaderMenu = (props: {
 
   const menuList = [
     {
-      name: "Việc Làm IT",
+      name: "Jobs IT",
       link: "#",
       isLogin: undefined,
       children: [
         {
-          name: "Việc làm IT theo kỹ năng",
+          name: "Jobs IT by Skills",
           link: "#",
           children: [
             {
@@ -54,21 +54,21 @@ export const HeaderMenu = (props: {
           ]
         },
         {
-          name: "Việc làm IT theo thành phố",
+          name: "Jobs IT by City",
           link: "#",
           children: [
             {
-              name: " Hà Nội ",
+              name: "Hanoi",
               link: "/search?city=Hà Nội",
               children: null
             },
             {
-              name: " Đà Nẵng ",
+              name: "Da Nang",
               link: "/search?city=Đà Nẵng",
               children: null
             },
             {
-              name: " Hải Phòng ",
+              name: "Hai Phong",
               link: "/search?city=Hải Phòng",
               children: null
             },
@@ -77,7 +77,7 @@ export const HeaderMenu = (props: {
       ]
     },
     {
-      name: "Top Công Ty IT",
+      name: "Top Company IT",
       link: "/company/list",
       isLogin: undefined,
       children: topCompanies.map(item => ({
@@ -87,17 +87,17 @@ export const HeaderMenu = (props: {
       }))
     },
     {
-      name: "Nhà Tuyển Dụng",
+      name: "Company Account",
       link: "#",
       isLogin: false,
       children: [
         {
-          name: "Đăng Nhập",
+          name: "Log in",
           link: "/company/login",
           children: []
         },
         {
-          name: "Đăng Ký",
+          name: "Sign up",
           link: "/company/register",
           children: []
         },
@@ -135,7 +135,6 @@ export const HeaderMenu = (props: {
                 <FaAngleDown className="text-[16px] text-white" />
               )}
 
-              {/* Menu Cấp 2 */}
               {item.children && (
                 <ul className="bg-[#000065] rounded-[4px] lg:absolute relative lg:top-[100%] top-0 left-0 lg:w-[280px] w-full hidden group-hover/sub-1:block z-10">
                   {item.children.map((menuSub1, indexSub1) => (
@@ -150,7 +149,6 @@ export const HeaderMenu = (props: {
                         <FaAngleRight className="text-[16px] text-white" />
                       )}
 
-                      {/* Menu Cấp 3 */}
                       {menuSub1.children && (
                         <ul className="bg-[#000065] rounded-[4px] absolute top-0 left-[100%] w-[280px] hidden group-hover/sub-2:block shadow-lg">
                           {menuSub1.children.map((menuSub2, indexSub2) => (

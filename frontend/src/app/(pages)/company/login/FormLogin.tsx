@@ -8,27 +8,25 @@ export const FormLogin = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // 1. Khởi tạo bộ kiểm tra dữ liệu
     const validator = new JustValidate("#loginForm");
 
     validator
       .addField("#email", [
         {
           rule: "required",
-          errorMessage: "Vui lòng nhập email!",
+          errorMessage: "Please enter your email!",
         },
         {
           rule: "email",
-          errorMessage: "Email không đúng định dạng!",
+          errorMessage: "Invalid email format!",
         },
       ])
       .addField("#password", [
         {
           rule: "required",
-          errorMessage: "Vui lòng nhập mật khẩu!",
+          errorMessage: "Please enter your password!",
         },
       ])
-      // 2. Xử lý khi dữ liệu hợp lệ và nhấn đăng nhập
       .onSuccess((event: any) => {
         const email = event.target.email.value;
         const password = event.target.password.value;
@@ -38,14 +36,13 @@ export const FormLogin = () => {
           password: password,
         };
 
-        // Gửi yêu cầu tới server cổng 5000
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/company/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(dataFinal),
-          credentials: "include", // Quan trọng để nhận và lưu Cookie từ Server
+          credentials: "include",
         })
           .then((res) => res.json())
           .then((data) => {
@@ -53,7 +50,7 @@ export const FormLogin = () => {
               alert(data.message);
             }
             if (data.code === "success") {
-              router.push("/"); // Chuyển hướng về trang chủ khi thành công
+              router.push("/");
             }
           });
       });
@@ -78,7 +75,7 @@ export const FormLogin = () => {
         {/* Password Field */}
         <div>
           <label htmlFor="password" className="block font-[500] text-[14px] text-black mb-[5px]">
-            Mật khẩu *
+            Password *
           </label>
           <input
             type="password"
@@ -91,7 +88,7 @@ export const FormLogin = () => {
         {/* Submit Button */}
         <div>
           <button className="bg-[#0088FF] hover:bg-opacity-90 cursor-pointer active:scale-95 transition-all rounded-[4px] w-[100%] h-[48px] px-[20px] font-[700] text-[16px] text-white">
-            Đăng nhập
+            Login
           </button>
         </div>
       </form>

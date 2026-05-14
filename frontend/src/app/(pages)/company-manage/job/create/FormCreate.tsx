@@ -11,7 +11,6 @@ import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 import { Toaster, toast } from 'sonner';
 import  { positionList ,  workingFormList }  from  "@/configs/variable" ;
 
-// Đăng ký FilePond plugins
 registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview);
 
 export const FormCreate = () => {
@@ -26,7 +25,7 @@ export const FormCreate = () => {
       .addField("#title", [
         {
           rule: "required",
-          errorMessage: "Vui lòng nhập tên công việc!",
+          errorMessage: "Please enter the job title!",
         },
       ])
       .onFail(() => {
@@ -47,7 +46,6 @@ export const FormCreate = () => {
     if (isValid) {
       const formData = new FormData();
 
-      // Lấy dữ liệu từ các trường input/select
       formData.append("title", event.target.title.value);
       formData.append("salaryMin", event.target.salaryMin.value);
       formData.append("salaryMax", event.target.salaryMax.value);
@@ -55,12 +53,10 @@ export const FormCreate = () => {
       formData.append("workingForm", event.target.workingForm.value);
       formData.append("technologies", event.target.technologies.value);
 
-      // Lấy dữ liệu từ TinyMCE thông qua Ref
       if (editorRef.current) {
         formData.append("description", editorRef.current.getContent());
       }
 
-      // Xử lý danh sách ảnh từ FilePond
       if (images.length > 0) {
         for (let i = 0; i < images.length; i++) {
           formData.append("images", images[i].file);
@@ -78,20 +74,20 @@ export const FormCreate = () => {
             toast.error(data.message);
           }
           if (data.code === "success") {
-            toast.success("Tạo công việc thành công!");
-            event.target.reset(); // Reset form
-            setImages([]); // Xóa danh sách ảnh trong state
+            toast.success("Job created successfully!");
+            event.target.reset();
+            setImages([]);
             if (editorRef.current) {
-              editorRef.current.setContent(""); // Xóa nội dung trong Editor
+              editorRef.current.setContent("");
             }
           }
         })
         .catch((err) => {
           console.error(err);
-          toast.error("Có lỗi xảy ra khi kết nối server!");
+          toast.error("An error occurred while connecting to the server!");
         });
     } else {
-      toast.error("Vui lòng điền đầy đủ thông tin bắt buộc!");
+      toast.error("Please fill in all required fields!");
     }
   };
 
@@ -103,24 +99,24 @@ export const FormCreate = () => {
         id="createForm"
         onSubmit={handleSubmit}
       >
-        {/* Tên công việc */}
+        {/* Job Title */}
         <div className="sm:col-span-2">
           <label htmlFor="title" className="block font-[500] text-[14px] text-black mb-[5px]">
-            Tên công việc *
+            Job Title *
           </label>
           <input
             type="text"
             name="title"
             id="title"
-            placeholder="Ví dụ: Senior Frontend Developer"
+            placeholder="e.g. Senior Frontend Developer"
             className="w-[100%] h-[46px] border border-[#DEDEDE] rounded-[4px] py-[14px] px-[20px] font-[500] text-[14px] text-black"
           />
         </div>
 
-        {/* Lương */}
+        {/* Salary */}
         <div>
           <label htmlFor="salaryMin" className="block font-[500] text-[14px] text-black mb-[5px]">
-            Mức lương tối thiểu ($)
+            Minimum Salary ($)
           </label>
           <input
             type="number"
@@ -132,7 +128,7 @@ export const FormCreate = () => {
 
         <div>
           <label htmlFor="salaryMax" className="block font-[500] text-[14px] text-black mb-[5px]">
-            Mức lương tối đa ($)
+            Maximum Salary ($)
           </label>
           <input
             type="number"
@@ -142,10 +138,10 @@ export const FormCreate = () => {
           />
         </div>
 
-        {/* Cấp bậc */}
+        {/* Position */}
         <div>
           <label htmlFor="position" className="block font-[500] text-[14px] text-black mb-[5px]">
-            Cấp bậc *
+            Position *
           </label>
           <select
             name="position"
@@ -160,10 +156,10 @@ export const FormCreate = () => {
           </select>
         </div>
 
-        {/* Hình thức làm việc */}
+        {/* Working Form */}
         <div>
           <label htmlFor="workingForm" className="block font-[500] text-[14px] text-black mb-[5px]">
-            Hình thức làm việc *
+            Working Form *
           </label>
           <select
             name="workingForm"
@@ -178,10 +174,10 @@ export const FormCreate = () => {
           </select>
         </div>
 
-        {/* Công nghệ */}
+        {/* Technologies */}
         <div className="sm:col-span-2">
           <label htmlFor="technologies" className="block font-[500] text-[14px] text-black mb-[5px]">
-            Các công nghệ (cách nhau bởi dấu phẩy)
+            Technologies (comma-separated)
           </label>
           <input
             type="text"
@@ -192,10 +188,10 @@ export const FormCreate = () => {
           />
         </div>
 
-        {/* Danh sách ảnh FilePond */}
+        {/* Images */}
         <div className="sm:col-span-2">
           <label htmlFor="images" className="block font-[500] text-[14px] text-black mb-[5px]">
-            Danh sách ảnh dự án/văn phòng
+            Project / Office Images
           </label>
           <FilePond
             files={images}
@@ -203,15 +199,15 @@ export const FormCreate = () => {
             allowMultiple={true}
             maxFiles={8}
             name="images"
-            labelIdle='Kéo thả hoặc <span class="filepond--label-action">Chọn ảnh</span>'
+            labelIdle='Drag & drop or <span class="filepond--label-action">Choose image</span>'
             acceptedFileTypes={['image/*']}
           />
         </div>
 
-        {/* Mô tả chi tiết TinyMCE */}
+        {/* Description */}
         <div className="sm:col-span-2">
           <label htmlFor="description" className="block font-[500] text-[14px] text-black mb-[5px]">
-            Mô tả chi tiết công việc
+            Job Description
           </label>
           <EditorMCE
             editorRef={editorRef}
@@ -220,13 +216,13 @@ export const FormCreate = () => {
           />
         </div>
 
-        {/* Nút Submit */}
+        {/* Submit */}
         <div className="sm:col-span-2">
-          <button 
+          <button
             type="submit"
             className="bg-[#0088FF] rounded-[4px] h-[48px] px-[30px] font-[700] text-[16px] text-white hover:bg-[#0077ee] transition-all"
           >
-            Tạo mới công việc
+            Create Job
           </button>
         </div>
       </form>

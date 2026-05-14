@@ -11,7 +11,6 @@ import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 import { Toaster, toast } from 'sonner';
 import { positionList, workingFormList } from "@/configs/variable";
 
-// Đăng ký FilePond plugins
 registerPlugin(FilePondPluginFileValidateType, FilePondPluginImagePreview);
 
 export const FormEdit = (props: { id: string }) => {
@@ -21,7 +20,6 @@ export const FormEdit = (props: { id: string }) => {
   const [images, setImages] = useState<any[]>([]);
   const [jobDetail, setJobDetail] = useState<any>(null);
 
-  // 1. Lấy dữ liệu chi tiết công việc để đổ vào form
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/company/job/edit/${id}`, {
       credentials: "include"
@@ -37,10 +35,8 @@ export const FormEdit = (props: { id: string }) => {
       });
   }, [id]);
 
-  // 2. Khởi tạo dữ liệu ảnh và Validation khi jobDetail đã tải xong
   useEffect(() => {
     if (jobDetail) {
-      // Xử lý nạp ảnh cũ vào FilePond
       if (jobDetail.images && jobDetail.images.length > 0) {
         const listImage = jobDetail.images.map((image: string) => ({
           source: image,
@@ -54,7 +50,7 @@ export const FormEdit = (props: { id: string }) => {
         .addField("#title", [
           {
             rule: "required",
-            errorMessage: "Vui lòng nhập tên công việc!",
+            errorMessage: "Please enter the job title!",
           },
         ])
         .onFail(() => setIsValid(false))
@@ -81,13 +77,11 @@ export const FormEdit = (props: { id: string }) => {
         formData.append("description", editorRef.current.getContent());
       }
 
-      // Xử lý danh sách ảnh
       if (images.length > 0) {
         for (let i = 0; i < images.length; i++) {
           if (images[i].file) {
             formData.append("images", images[i].file);
           } else {
-            // Nếu là ảnh cũ (không có file mới), gửi lại URL cũ để giữ ảnh
             formData.append("images", images[i].source);
           }
         }
@@ -104,10 +98,10 @@ export const FormEdit = (props: { id: string }) => {
             toast.error(data.message);
           }
           if (data.code === "success") {
-            toast.success("Cập nhật công việc thành công!");
+            toast.success("Job updated successfully!");
           }
         })
-        .catch(() => toast.error("Có lỗi xảy ra khi cập nhật!"));
+        .catch(() => toast.error("An error occurred while updating!"));
     }
   };
 
@@ -120,10 +114,10 @@ export const FormEdit = (props: { id: string }) => {
           id="editForm"
           onSubmit={handleSubmit}
         >
-          {/* Tên công việc */}
+          {/* Job Title */}
           <div className="sm:col-span-2">
             <label htmlFor="title" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Tên công việc *
+              Job Title *
             </label>
             <input
               type="text"
@@ -134,10 +128,10 @@ export const FormEdit = (props: { id: string }) => {
             />
           </div>
 
-          {/* Lương */}
+          {/* Salary */}
           <div>
             <label htmlFor="salaryMin" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Mức lương tối thiểu ($)
+              Minimum Salary ($)
             </label>
             <input
               type="number"
@@ -150,7 +144,7 @@ export const FormEdit = (props: { id: string }) => {
 
           <div>
             <label htmlFor="salaryMax" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Mức lương tối đa ($)
+              Maximum Salary ($)
             </label>
             <input
               type="number"
@@ -161,10 +155,10 @@ export const FormEdit = (props: { id: string }) => {
             />
           </div>
 
-          {/* Cấp bậc */}
+          {/* Position */}
           <div>
             <label htmlFor="position" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Cấp bậc *
+              Position *
             </label>
             <select
               name="position"
@@ -180,10 +174,10 @@ export const FormEdit = (props: { id: string }) => {
             </select>
           </div>
 
-          {/* Hình thức làm việc */}
+          {/* Working Form */}
           <div>
             <label htmlFor="workingForm" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Hình thức làm việc *
+              Working Form *
             </label>
             <select
               name="workingForm"
@@ -199,10 +193,10 @@ export const FormEdit = (props: { id: string }) => {
             </select>
           </div>
 
-          {/* Công nghệ */}
+          {/* Technologies */}
           <div className="sm:col-span-2">
             <label htmlFor="technologies" className="block font-[500] text-[14px] text-black mb-[5px]">
-              Các công nghệ (cách nhau bởi dấu phẩy)
+              Technologies (comma-separated)
             </label>
             <input
               type="text"
@@ -213,10 +207,10 @@ export const FormEdit = (props: { id: string }) => {
             />
           </div>
 
-          {/* Danh sách ảnh */}
+          {/* Images */}
           <div className="sm:col-span-2">
             <label className="block font-[500] text-[14px] text-black mb-[5px]">
-              Danh sách ảnh
+              Images
             </label>
             <FilePond
               files={images}
@@ -224,15 +218,15 @@ export const FormEdit = (props: { id: string }) => {
               allowMultiple={true}
               maxFiles={8}
               name="images"
-              labelIdle='Kéo thả ảnh hoặc <span class="filepond--label-action">Chọn</span>'
+              labelIdle='Drag & drop or <span class="filepond--label-action">Choose</span>'
               acceptedFileTypes={['image/*']}
             />
           </div>
 
-          {/* Editor MCE */}
+          {/* Description */}
           <div className="sm:col-span-2">
             <label className="block font-[500] text-[14px] text-black mb-[5px]">
-              Mô tả chi tiết
+              Description
             </label>
             <EditorMCE
               editorRef={editorRef}
@@ -243,7 +237,7 @@ export const FormEdit = (props: { id: string }) => {
 
           <div className="sm:col-span-2">
             <button className="bg-[#0088FF] rounded-[4px] h-[48px] px-[30px] font-[700] text-[16px] text-white hover:bg-[#0077ee] transition-all">
-              Cập nhật công việc
+              Update Job
             </button>
           </div>
         </form>

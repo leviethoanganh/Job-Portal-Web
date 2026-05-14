@@ -9,7 +9,6 @@ import jobRoutes from "./job.route";
 
 const router = Router();
 
-// Định nghĩa tiền tố /user cho tất cả các tuyến đường liên quan đến người dùng
 router.use("/user", userRoutes);
 router.use("/auth", authRoutes);
 router.use("/city", cityRoutes);

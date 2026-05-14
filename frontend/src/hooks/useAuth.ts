@@ -8,12 +8,11 @@ export const useAuth = () => {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Gọi API kiểm tra trạng thái đăng nhập từ Server
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/check`, {
-      credentials: "include", // Quan trọng: Gửi kèm Cookie chứa JWT để Server xác thực
+      credentials: "include",
     })
       .then((res) => {
-        if(!res.ok) throw new Error("Kiểm tra xác thực thất bại");
+        if(!res.ok) throw new Error("Authentication check failed");
         return res.json();
       })
       .then((data) => {
@@ -33,9 +32,8 @@ export const useAuth = () => {
           }
         }
       })
-      .catch((err) => console.log("Lỗi kiểm tra xác thực:", err));
+      .catch((err) => console.log("Authentication check error:", err));
   }, [pathname]);
-// Chạy lại mỗi khi người dùng chuyển trang để cập nhật trạng thái
 
   return {
     isLogin: isLogin,

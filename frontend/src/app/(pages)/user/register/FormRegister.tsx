@@ -8,69 +8,66 @@ export const FormRegister = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // 1. Khởi tạo Validator ngay khi component vừa hiện ra (Mount)
     const validator = new JustValidate("#registerForm");
 
-    // 2. Thiết lập các quy tắc kiểm tra (Rules) cho từng trường
     validator
       .addField("#fullName", [
         {
           rule: "required",
-          errorMessage: "Vui lòng nhập họ tên!",
+          errorMessage: "Please enter your full name!",
         },
         {
           rule: "minLength",
           value: 5,
-          errorMessage: "Vui lòng nhập ít nhất 5 ký tự!",
+          errorMessage: "Must be at least 5 characters!",
         },
         {
           rule: "maxLength",
           value: 50,
-          errorMessage: "Vui lòng nhập tối đa 50 ký tự!",
+          errorMessage: "Must be at most 50 characters!",
         },
       ])
       .addField("#email", [
         {
           rule: "required",
-          errorMessage: "Vui lòng nhập email!",
+          errorMessage: "Please enter your email!",
         },
         {
           rule: "email",
-          errorMessage: "Email không đúng định dạng!",
+          errorMessage: "Invalid email format!",
         },
       ])
       .addField("#password", [
         {
           rule: "required",
-          errorMessage: "Vui lòng nhập mật khẩu!",
+          errorMessage: "Please enter your password!",
         },
         {
           rule: "minLength",
           value: 8,
-          errorMessage: "Mật khẩu phải có ít nhất 8 ký tự!",
+          errorMessage: "Password must be at least 8 characters!",
         },
         {
           rule: "customRegexp",
           value: /[a-z]/,
-          errorMessage: "Mật khẩu phải chứa ký tự thường!",
+          errorMessage: "Password must contain a lowercase letter!",
         },
         {
           rule: "customRegexp",
           value: /[A-Z]/,
-          errorMessage: "Mật khẩu phải chứa ký tự hoa!",
+          errorMessage: "Password must contain an uppercase letter!",
         },
         {
           rule: "customRegexp",
           value: /\d/,
-          errorMessage: "Mật khẩu phải chứa chữ số!",
+          errorMessage: "Password must contain a number!",
         },
         {
           rule: "customRegexp",
           value: /[^A-Za-z0-9]/,
-          errorMessage: "Mật khẩu phải chứa ký tự đặc biệt!",
+          errorMessage: "Password must contain a special character!",
         },
       ])
-      // 3. Logic xử lý KHI BẤM NÚT và DỮ LIỆU HỢP LỆ
       .onSuccess((event: any) => {
         const formData = event.target;
         const dataFinal = {
@@ -79,7 +76,6 @@ export const FormRegister = () => {
           password: formData.password.value,
         };
 
-        // Gửi dữ liệu về Server
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/register`, {
           method: "POST",
           headers: {
@@ -94,20 +90,19 @@ export const FormRegister = () => {
             }
             if (data.code === "success") {
               alert(data.message);
-              console.log("Viết logic chuyển sang trang đăng nhập...");
               router . push ( "/user/login" );
             }
           });
       });
-  }, []); // Mảng phụ thuộc rỗng: Chỉ chạy khởi tạo 1 lần duy nhất
+  }, []);
 
   return (
     <>
       <form action="" className="grid grid-cols-1 gap-y-[15px]" id="registerForm">
-        {/* Họ tên */}
+        {/* Full Name */}
         <div>
           <label htmlFor="fullName" className="block font-[500] text-[14px] text-black mb-[5px]">
-            Họ tên *
+            Full Name *
           </label>
           <input
             type="text"
@@ -130,10 +125,10 @@ export const FormRegister = () => {
           />
         </div>
 
-        {/* Mật khẩu */}
+        {/* Password */}
         <div>
           <label htmlFor="password" className="block font-[500] text-[14px] text-black mb-[5px]">
-            Mật khẩu *
+            Password *
           </label>
           <input
             type="password"
@@ -143,10 +138,10 @@ export const FormRegister = () => {
           />
         </div>
 
-        {/* Nút đăng ký */}
+        {/* Submit Button */}
         <div>
           <button className="bg-primary hover:bg-opacity-90 transition-all rounded-[4px] w-[100%] h-[48px] px-[20px] font-[700] text-[16px] text-white">
-            Đăng ký
+            Sign Up
           </button>
         </div>
       </form>
